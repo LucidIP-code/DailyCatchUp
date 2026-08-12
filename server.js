@@ -10,7 +10,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-const DATA_FILE = path.join(__dirname, "data.json");
+const DATA_FILE = process.env.VERCEL
+  ? path.join("/tmp", "data.json")
+  : path.join(__dirname, "data.json");
 
 // Setup Google Sheets API Auth
 // Setup Google Sheets API Auth (Hybrid: Local file + Vercel Env Vars)
@@ -35,7 +37,12 @@ const sheets = google.sheets({ version: "v4", auth });
 
 function getPersistentData() {
   if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ names: [], projects: [] }, null, 2));
+    const sourcePath = path.join(__dirname, "data.json");
+    const initialData = fs.existsSync(sourcePath)
+      ? fs.readFileSync(sourcePath, "utf-8")
+      : JSON.stringify({ names: [], projects: [] }, null, 2);
+
+    fs.writeFileSync(DATA_FILE, initialData);
   }
   try {
     return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
