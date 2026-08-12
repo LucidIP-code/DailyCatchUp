@@ -8,8 +8,8 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --neon-yellow: #ccff00;
-            --neon-hover: #d4ff1a;
+            --neon-yellow: hsl(36, 100%, 50%);
+            --neon-hover: #ffb61a;
             --neon-subtle: rgba(204, 255, 0, 0.12);
             --bg: #0a0a0a;
             --surface: #1c1d21;
@@ -292,7 +292,7 @@
     <div class="modal-content" style="border-top: 4px solid var(--neon-yellow);">
         <h3 id="manage-modal-title" style="color: var(--neon-yellow); margin-bottom: 8px;">Manage List</h3>
         <p style="font-size: 0.85rem; color: var(--muted);">
-            Removes item from future dropdown choices. <strong style="color: var(--neon-yellow);">Your existing Excel data wont be Deleted.</strong>
+            Removes item from future dropdown choices. <strong style="color: var(--neon-yellow);">Your existing Excel data remains 100% safe and intact.</strong>
         </p>
         <div id="manage-list-container" class="manage-list"></div>
         <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
@@ -330,367 +330,401 @@
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
 
-    <script>
-        let optionsData = { names: [], projects: [] };
-        let plainTextReport = "";
-        let targetDeleteName = "";
-        let activeSelectElem = null;
-        let activeInputType = "";
-        let currentManageType = "";
+  <script>
+    let optionsData = { names: [], projects: [] };
+    let plainTextReport = "";
+    let targetDeleteName = "";
+    let activeSelectElem = null;
+    let activeInputType = "";
+    let currentManageType = "";
 
-        // Custom Toast Function
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    // Custom Toast Function
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
 
-            toast.className = `toast toast-${type}`;
-            toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span><div>${message}</div>`;
-            container.appendChild(toast);
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span><div>${message}</div>`;
+        container.appendChild(toast);
 
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    async function init() {
+        await loadOptions();
+        try {
+            const urlRes = await fetch('/api/sheet-url');
+            const urlData = await urlRes.json();
+            if (urlData.url) document.getElementById('sheet-link').href = urlData.url;
+        } catch (e) {
+            console.error("Could not fetch sheet URL:", e);
+        }
+        loadDailyStatus();
+    }
+
+    async function loadOptions() {
+        try {
+            const res = await fetch('/api/options');
+            optionsData = await res.json();
+            
+            if (!optionsData.names) optionsData.names = [];
+            if (!optionsData.projects) optionsData.projects = [];
+
+            const nameSelect = document.getElementById('name-select');
+            const currentName = nameSelect.value;
+            nameSelect.innerHTML = `<option value="">-- Select Name --</option>`;
+            optionsData.names.forEach(n => nameSelect.innerHTML += `<option value="${n}">${n}</option>`);
+            nameSelect.innerHTML += `<option value="__ADD_NEW__">+ Add New Name...</option>`;
+            if (currentName && optionsData.names.includes(currentName)) nameSelect.value = currentName;
+
+            // Update Project dropdowns
+            document.querySelectorAll('.project-select').forEach(pSelect => {
+                const currentVal = pSelect.value;
+                let pOptions = `<option value="">-- Select Project --</option>`;
+                optionsData.projects.forEach(p => pOptions += `<option value="${p}">${p}</option>`);
+                pOptions += `<option value="__ADD_NEW__">+ Add New Project...</option>`;
+                pSelect.innerHTML = pOptions;
+                if (currentVal && optionsData.projects.includes(currentVal)) pSelect.value = currentVal;
+            });
+
+            if (document.querySelectorAll('.task-row').length === 0) {
+                addTaskRow();
+            }
+        } catch (e) {
+            console.error("Error loading options:", e);
+            showToast("Failed to load options from server.", "error");
+        }
+    }
+
+    // --- ADD & REMOVE DYNAMIC TASK ROWS ---
+    function addTaskRow() {
+        const container = document.getElementById('tasks-container');
+        const div = document.createElement('div');
+        div.className = 'task-row';
+        
+        let projectOptions = `<option value="">-- Select Project --</option>`;
+        if (optionsData.projects) {
+            optionsData.projects.forEach(p => projectOptions += `<option value="${p}">${p}</option>`);
+        }
+        projectOptions += `<option value="__ADD_NEW__">+ Add New Project...</option>`;
+
+        div.innerHTML = `
+            <div class="form-group">
+                <div class="label-row">
+                    <label>Project:</label>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-ghost btn-sm" onclick="openManageModal('project')">⚙️ Manage Projects</button>
+                        <button class="btn btn-danger btn-sm remove-task-btn" onclick="removeTaskRow(this)">✕ Remove</button>
+                    </div>
+                </div>
+                <select class="project-select" onchange="handleDropdownChange(this, 'project')">${projectOptions}</select>
+            </div>
+            <div class="form-group">
+                <label>Task Details (Enter each point on a new line):</label>
+                <textarea class="task-input" rows="3" placeholder="Point 1: Details...\nPoint 2: Details..."></textarea>
+            </div>
+        `;
+        container.appendChild(div);
+        updateRemoveButtonsVisibility();
+    }
+
+   function removeTaskRow(buttonElem) {
+    // Show confirmation dialog before removing the project task block
+    const confirmDelete = confirm("Are you sure you want to remove this project task block?");
+    if (!confirmDelete) return;
+
+    const row = buttonElem.closest('.task-row');
+    if (row) {
+        row.remove();
+        updateRemoveButtonsVisibility();
+    }
+}
+
+    function updateRemoveButtonsVisibility() {
+        const rows = document.querySelectorAll('.task-row');
+        rows.forEach(row => {
+            const removeBtn = row.querySelector('.remove-task-btn');
+            if (removeBtn) {
+                // Only show remove button when there are 2 or more task cards
+                removeBtn.style.display = rows.length > 1 ? 'inline-flex' : 'none';
+            }
+        });
+    }
+
+    // --- STYLED MODAL FOR NEW INPUT ---
+    function handleDropdownChange(selectElem, type) {
+        if (selectElem.value === '__ADD_NEW__') {
+            activeSelectElem = selectElem;
+            activeInputType = type;
+            
+            document.getElementById('input-modal-title').textContent = type === 'name' ? '👤 Add New Name' : '📂 Add New Project';
+            document.getElementById('input-modal-label').textContent = type === 'name' ? 'Enter Person Name:' : 'Enter Project Name:';
+            
+            const inputVal = document.getElementById('input-modal-value');
+            inputVal.value = '';
+            document.getElementById('input-modal').style.display = 'flex';
+            setTimeout(() => inputVal.focus(), 100);
+        }
+    }
+
+    function closeInputModal() {
+        if (activeSelectElem) activeSelectElem.value = "";
+        document.getElementById('input-modal').style.display = 'none';
+        activeSelectElem = null;
+        activeInputType = "";
+    }
+
+    async function submitInputModal() {
+        const valInput = document.getElementById('input-modal-value');
+        const trimmed = valInput.value.trim();
+
+        if (!trimmed) {
+            showToast(`Please enter a valid ${activeInputType} name.`, "error");
+            return;
         }
 
-        async function init() {
+        try {
+            await fetch('/api/options', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: activeInputType, value: trimmed })
+            });
+            
+            const currentElem = activeSelectElem;
             await loadOptions();
-            try {
-                const urlRes = await fetch('/api/sheet-url');
-                const urlData = await urlRes.json();
-                if (urlData.url) document.getElementById('sheet-link').href = urlData.url;
-            } catch (e) {
-                console.error("Could not fetch sheet URL:", e);
+            
+            if (currentElem) {
+                currentElem.value = trimmed;
             }
+            
+            showToast(`Added new ${activeInputType}: ${trimmed}`, "success");
+            document.getElementById('input-modal').style.display = 'none';
+        } catch (e) {
+            showToast(`Failed to add ${activeInputType}`, "error");
+        }
+    }
+
+    // --- MANAGE OPTIONS (DELETE NAMES & PROJECTS WITH CONFIRMATION) ---
+    function openManageModal(type) {
+        currentManageType = type;
+        document.getElementById('manage-modal-title').textContent = type === 'name' ? '⚙️ Manage Person Names' : '⚙️ Manage Project Names';
+        renderManageList();
+        document.getElementById('manage-modal').style.display = 'flex';
+    }
+
+    function closeManageModal() {
+        document.getElementById('manage-modal').style.display = 'none';
+        currentManageType = "";
+    }
+
+    function renderManageList() {
+        const list = currentManageType === 'name' ? optionsData.names : optionsData.projects;
+        const container = document.getElementById('manage-list-container');
+        
+        if (!list || list.length === 0) {
+            container.innerHTML = `<p style="color: var(--muted); padding: 12px 0;">No items found in list.</p>`;
+            return;
+        }
+
+        container.innerHTML = list.map(item => `
+            <div class="manage-item">
+                <span>${item}</span>
+                <button class="btn btn-danger btn-sm" onclick="removeOptionItem('${item}')">Remove</button>
+            </div>
+        `).join('');
+    }
+
+    async function removeOptionItem(value) {
+    const itemType = currentManageType === 'name' ? 'person name' : 'project';
+    
+    // CONFIRMATION PROMPT
+    const confirmDelete = confirm(`Are you sure you want to remove the ${itemType} "${value}"?`);
+    if (!confirmDelete) return;
+
+    try {
+        const res = await fetch('/api/options', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: currentManageType, value })
+        });
+        
+        const result = await res.json();
+        if (result.success) {
+            showToast(`Removed "${value}" from list.`, "success");
+            await loadOptions();
+            renderManageList();
+        } else {
+            showToast("Failed to remove item", "error");
+        }
+    } catch (e) {
+        showToast("Error removing option item.", "error");
+    }
+}
+
+    async function loadDailyStatus() {
+        try {
+            const res = await fetch('/api/daily-status');
+            const data = await res.json();
+            plainTextReport = data.report || "";
+            document.getElementById('report-body').innerHTML = data.htmlReport || "No tasks recorded today.";
+        } catch (e) {
+            document.getElementById('report-body').innerHTML = "<p style='color: var(--error);'>Unable to fetch status. Verify Google Sheet connection.</p>";
+        }
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        if (tabName === 'entry') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('tab-entry').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('tab-status').classList.add('active');
             loadDailyStatus();
         }
+    }
 
-        async function loadOptions() {
-            try {
-                const res = await fetch('/api/options');
-                optionsData = await res.json();
-                
-                if (!optionsData.names) optionsData.names = [];
-                if (!optionsData.projects) optionsData.projects = [];
+    function openConfirmation() {
+        const name = document.getElementById('name-select').value;
+        if (!name || name === '__ADD_NEW__') return showToast("Please select a valid name.", "error");
 
-                const nameSelect = document.getElementById('name-select');
-                const currentName = nameSelect.value;
-                nameSelect.innerHTML = `<option value="">-- Select Name --</option>`;
-                optionsData.names.forEach(n => nameSelect.innerHTML += `<option value="${n}">${n}</option>`);
-                nameSelect.innerHTML += `<option value="__ADD_NEW__">+ Add New Name...</option>`;
-                if (currentName && optionsData.names.includes(currentName)) nameSelect.value = currentName;
+        const taskRows = document.querySelectorAll('.task-row');
+        const tasks = [];
+        let isValid = true;
 
-                // Update Project dropdowns
-                document.querySelectorAll('.project-select').forEach(pSelect => {
-                    const currentVal = pSelect.value;
-                    let pOptions = `<option value="">-- Select Project --</option>`;
-                    optionsData.projects.forEach(p => pOptions += `<option value="${p}">${p}</option>`);
-                    pOptions += `<option value="__ADD_NEW__">+ Add New Project...</option>`;
-                    pSelect.innerHTML = pOptions;
-                    if (currentVal && optionsData.projects.includes(currentVal)) pSelect.value = currentVal;
-                });
-
-                if (document.querySelectorAll('.task-row').length === 0) {
-                    addTaskRow();
-                }
-            } catch (e) {
-                console.error("Error loading options:", e);
-                showToast("Failed to load options from server.", "error");
-            }
-        }
-
-        function addTaskRow() {
-            const container = document.getElementById('tasks-container');
-            const div = document.createElement('div');
-            div.className = 'task-row';
-            
-            let projectOptions = `<option value="">-- Select Project --</option>`;
-            if (optionsData.projects) {
-                optionsData.projects.forEach(p => projectOptions += `<option value="${p}">${p}</option>`);
-            }
-            projectOptions += `<option value="__ADD_NEW__">+ Add New Project...</option>`;
-
-            div.innerHTML = `
-                <div class="form-group">
-                    <div class="label-row">
-                        <label>Project:</label>
-                        <button class="btn btn-ghost btn-sm" onclick="openManageModal('project')">⚙️ Manage Projects</button>
-                    </div>
-                    <select class="project-select" onchange="handleDropdownChange(this, 'project')">${projectOptions}</select>
-                </div>
-                <div class="form-group">
-                    <label>Task Details (Enter each point on a new line):</label>
-                    <textarea class="task-input" rows="3" placeholder="Point 1: Details...\nPoint 2: Details..."></textarea>
-                </div>
-            `;
-            container.appendChild(div);
-        }
-
-        // --- STYLED MODAL FOR NEW INPUT ---
-        function handleDropdownChange(selectElem, type) {
-            if (selectElem.value === '__ADD_NEW__') {
-                activeSelectElem = selectElem;
-                activeInputType = type;
-                
-                document.getElementById('input-modal-title').textContent = type === 'name' ? '👤 Add New Name' : '📂 Add New Project';
-                document.getElementById('input-modal-label').textContent = type === 'name' ? 'Enter Person Name:' : 'Enter Project Name:';
-                
-                const inputVal = document.getElementById('input-modal-value');
-                inputVal.value = '';
-                document.getElementById('input-modal').style.display = 'flex';
-                setTimeout(() => inputVal.focus(), 100);
-            }
-        }
-
-        function closeInputModal() {
-            if (activeSelectElem) activeSelectElem.value = "";
-            document.getElementById('input-modal').style.display = 'none';
-            activeSelectElem = null;
-            activeInputType = "";
-        }
-
-        async function submitInputModal() {
-            const valInput = document.getElementById('input-modal-value');
-            const trimmed = valInput.value.trim();
-
-            if (!trimmed) {
-                showToast(`Please enter a valid ${activeInputType} name.`, "error");
-                return;
-            }
-
-            try {
-                await fetch('/api/options', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: activeInputType, value: trimmed })
-                });
-                
-                const currentElem = activeSelectElem;
-                await loadOptions();
-                
-                if (currentElem) {
-                    currentElem.value = trimmed;
-                }
-                
-                showToast(`Added new ${activeInputType}: ${trimmed}`, "success");
-                document.getElementById('input-modal').style.display = 'none';
-            } catch (e) {
-                showToast(`Failed to add ${activeInputType}`, "error");
-            }
-        }
-
-        // --- MANAGE OPTIONS (DELETE NAMES & PROJECTS) ---
-        function openManageModal(type) {
-            currentManageType = type;
-            document.getElementById('manage-modal-title').textContent = type === 'name' ? '⚙️ Manage Person Names' : '⚙️ Manage Project Names';
-            renderManageList();
-            document.getElementById('manage-modal').style.display = 'flex';
-        }
-
-        function closeManageModal() {
-            document.getElementById('manage-modal').style.display = 'none';
-            currentManageType = "";
-        }
-
-        function renderManageList() {
-            const list = currentManageType === 'name' ? optionsData.names : optionsData.projects;
-            const container = document.getElementById('manage-list-container');
-            
-            if (!list || list.length === 0) {
-                container.innerHTML = `<p style="color: var(--muted); padding: 12px 0;">No items found in list.</p>`;
-                return;
-            }
-
-            container.innerHTML = list.map(item => `
-                <div class="manage-item">
-                    <span>${item}</span>
-                    <button class="btn btn-danger btn-sm" onclick="removeOptionItem('${item}')">Remove</button>
-                </div>
-            `).join('');
-        }
-
-        async function removeOptionItem(value) {
-            try {
-                const res = await fetch('/api/options', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: currentManageType, value })
-                });
-                
-                const result = await res.json();
-                if (result.success) {
-                    showToast(`Removed "${value}" from list.`, "success");
-                    await loadOptions();
-                    renderManageList();
-                } else {
-                    showToast("Failed to remove item", "error");
-                }
-            } catch (e) {
-                showToast("Error removing option item.", "error");
-            }
-        }
-
-        async function loadDailyStatus() {
-            try {
-                const res = await fetch('/api/daily-status');
-                const data = await res.json();
-                plainTextReport = data.report || "";
-                document.getElementById('report-body').innerHTML = data.htmlReport || "No tasks recorded today.";
-            } catch (e) {
-                document.getElementById('report-body').innerHTML = "<p style='color: var(--error);'>Unable to fetch status. Verify Google Sheet connection.</p>";
-            }
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            if (tabName === 'entry') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('tab-entry').classList.add('active');
+        taskRows.forEach(row => {
+            const proj = row.querySelector('.project-select').value;
+            const taskText = row.querySelector('.task-input').value;
+            if (!proj || proj === '__ADD_NEW__' || !taskText.trim()) {
+                isValid = false;
             } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('tab-status').classList.add('active');
+                tasks.push({ project: proj, task: taskText.trim() });
+            }
+        });
+
+        if (!isValid || tasks.length === 0) return showToast("Please complete all project and task fields.", "error");
+
+        document.getElementById('modal-name').textContent = name;
+        document.getElementById('modal-tasks').innerHTML = tasks.map(t => `<p><b>${t.project}:</b><br>${t.task.replace(/\n/g, '<br>')}</p><br>`).join('');
+        document.getElementById('confirm-modal').style.display = 'flex';
+    }
+
+    function closeConfirmation() {
+        document.getElementById('confirm-modal').style.display = 'none';
+    }
+
+    async function submitFinalData() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Saving...";
+
+        const name = document.getElementById('name-select').value;
+        const taskRows = document.querySelectorAll('.task-row');
+        const tasks = [];
+
+        taskRows.forEach(row => {
+            tasks.push({
+                project: row.querySelector('.project-select').value,
+                task: row.querySelector('.task-input').value.trim()
+            });
+        });
+
+        try {
+            const res = await fetch('/api/submit-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, tasks })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                showToast("Tasks successfully written to Excel!", "success");
+                closeConfirmation();
+                switchTab('status');
+            } else {
+                showToast("Error: " + result.error, "error");
+            }
+        } catch (e) {
+            showToast("Failed to save tasks to Excel.", "error");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Confirm & Save";
+        }
+    }
+
+    function deleteSelectedUserEntry() {
+        const name = document.getElementById('name-select').value;
+        if (!name || name === '__ADD_NEW__') return showToast("Select a name first to delete their entry.", "error");
+        openDeleteModal(name);
+    }
+
+    function deleteDirectEntry(personName) {
+        openDeleteModal(personName);
+    }
+
+    function openDeleteModal(personName) {
+        targetDeleteName = personName;
+        document.getElementById('delete-modal-name').textContent = personName;
+        document.getElementById('delete-modal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        targetDeleteName = "";
+        document.getElementById('delete-modal').style.display = 'none';
+    }
+
+    async function executeDelete() {
+        if (!targetDeleteName) return;
+
+        const deleteBtn = document.getElementById('confirm-delete-btn');
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = "Clearing...";
+
+        try {
+            const res = await fetch('/api/delete-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: targetDeleteName })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                showToast(`Cleared entry for ${targetDeleteName}`, "success");
+                closeDeleteModal();
                 loadDailyStatus();
+            } else {
+                showToast("Error: " + result.error, "error");
             }
+        } catch (e) {
+            showToast("Failed to clear entry.", "error");
+        } finally {
+            deleteBtn.disabled = false;
+            deleteBtn.textContent = "Yes, Clear Entry";
         }
+    }
 
-        function openConfirmation() {
-            const name = document.getElementById('name-select').value;
-            if (!name || name === '__ADD_NEW__') return showToast("Please select a valid name.", "error");
+    function copyReport() {
+        const htmlText = document.getElementById('report-body').innerHTML;
 
-            const taskRows = document.querySelectorAll('.task-row');
-            const tasks = [];
-            let isValid = true;
-
-            taskRows.forEach(row => {
-                const proj = row.querySelector('.project-select').value;
-                const taskText = row.querySelector('.task-input').value;
-                if (!proj || proj === '__ADD_NEW__' || !taskText.trim()) {
-                    isValid = false;
-                } else {
-                    tasks.push({ project: proj, task: taskText.trim() });
-                }
+        try {
+            const item = new ClipboardItem({
+                'text/html': new Blob([htmlText], { type: 'text/html' }),
+                'text/plain': new Blob([plainTextReport], { type: 'text/plain' })
             });
-
-            if (!isValid || tasks.length === 0) return showToast("Please complete all project and task fields.", "error");
-
-            document.getElementById('modal-name').textContent = name;
-            document.getElementById('modal-tasks').innerHTML = tasks.map(t => `<p><b>${t.project}:</b><br>${t.task.replace(/\n/g, '<br>')}</p><br>`).join('');
-            document.getElementById('confirm-modal').style.display = 'flex';
+            navigator.clipboard.write([item]).then(() => showToast("Report copied to clipboard!", "success"));
+        } catch(e) {
+            navigator.clipboard.writeText(plainTextReport).then(() => showToast("Report copied to clipboard!", "success"));
         }
+    }
 
-        function closeConfirmation() {
-            document.getElementById('confirm-modal').style.display = 'none';
-        }
-
-        async function submitFinalData() {
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Saving...";
-
-            const name = document.getElementById('name-select').value;
-            const taskRows = document.querySelectorAll('.task-row');
-            const tasks = [];
-
-            taskRows.forEach(row => {
-                tasks.push({
-                    project: row.querySelector('.project-select').value,
-                    task: row.querySelector('.task-input').value.trim()
-                });
-            });
-
-            try {
-                const res = await fetch('/api/submit-task', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, tasks })
-                });
-
-                const result = await res.json();
-                if (result.success) {
-                    showToast("Tasks successfully written to Excel!", "success");
-                    closeConfirmation();
-                    switchTab('status');
-                } else {
-                    showToast("Error: " + result.error, "error");
-                }
-            } catch (e) {
-                showToast("Failed to save tasks to Excel.", "error");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Confirm & Save";
-            }
-        }
-
-        function deleteSelectedUserEntry() {
-            const name = document.getElementById('name-select').value;
-            if (!name || name === '__ADD_NEW__') return showToast("Select a name first to delete their entry.", "error");
-            openDeleteModal(name);
-        }
-
-        function deleteDirectEntry(personName) {
-            openDeleteModal(personName);
-        }
-
-        function openDeleteModal(personName) {
-            targetDeleteName = personName;
-            document.getElementById('delete-modal-name').textContent = personName;
-            document.getElementById('delete-modal').style.display = 'flex';
-        }
-
-        function closeDeleteModal() {
-            targetDeleteName = "";
-            document.getElementById('delete-modal').style.display = 'none';
-        }
-
-        async function executeDelete() {
-            if (!targetDeleteName) return;
-
-            const deleteBtn = document.getElementById('confirm-delete-btn');
-            deleteBtn.disabled = true;
-            deleteBtn.textContent = "Clearing...";
-
-            try {
-                const res = await fetch('/api/delete-task', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: targetDeleteName })
-                });
-
-                const result = await res.json();
-                if (result.success) {
-                    showToast(`Cleared entry for ${targetDeleteName}`, "success");
-                    closeDeleteModal();
-                    loadDailyStatus();
-                } else {
-                    showToast("Error: " + result.error, "error");
-                }
-            } catch (e) {
-                showToast("Failed to clear entry.", "error");
-            } finally {
-                deleteBtn.disabled = false;
-                deleteBtn.textContent = "Yes, Clear Entry";
-            }
-        }
-
-        function copyReport() {
-            const htmlText = document.getElementById('report-body').innerHTML;
-
-            try {
-                const item = new ClipboardItem({
-                    'text/html': new Blob([htmlText], { type: 'text/html' }),
-                    'text/plain': new Blob([plainTextReport], { type: 'text/plain' })
-                });
-                navigator.clipboard.write([item]).then(() => showToast("Report copied to clipboard!", "success"));
-            } catch(e) {
-                navigator.clipboard.writeText(plainTextReport).then(() => showToast("Report copied to clipboard!", "success"));
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
+    window.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
