@@ -166,6 +166,28 @@
         #report-body ul { margin: 2px 0 10px 20px; }
         #report-body li { margin-bottom: 3px; }
         #report-body strong { color: var(--neon-yellow); }
+        .delete-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            padding: 4px;
+            margin-left: 4px;
+            cursor: pointer;
+            border-radius: 6px;
+            vertical-align: middle;
+            transition: background 0.15s ease;
+        }
+        .delete-icon-btn:hover {
+            background: rgba(255, 51, 102, 0.15);
+        }
+        .delete-icon-svg {
+            display: block;
+            width: 15px;
+            height: 15px;
+            stroke: #ff668c;
+        }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
         .modal-content { background: var(--surface); border: 1px solid var(--border); padding: 24px; border-radius: 12px; width: 90%; max-width: 480px; }
@@ -225,30 +247,6 @@
         .toast-error { border-left: 4px solid var(--error); }
         .toast-info { border-left: 4px solid var(--neon-yellow); }
         .toast-icon { font-size: 1.1rem; }
-.delete-icon-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 2px 4px;
-    vertical-align: middle;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 4px;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.delete-icon-btn:hover {
-    opacity: 0.8;
-    transform: scale(1.1);
-}
-
-.delete-icon-img {
-    height: 18px; /* Scales your 55x68 image down proportionally */
-    width: auto;
-    object-fit: contain;
-    display: block;
-}
-        
     </style>
 </head>
 <body>
@@ -283,9 +281,7 @@
         <br><br>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="btn btn-primary" style="flex: 2; justify-content: center;" onclick="openConfirmation()">Submit Tasks</button>
-            <button class="btn btn-danger" onclick="deleteSelectedUserEntry()">
-    <img src="/delete.png" alt="Delete" class="delete-icon-img"> Clear Today's Entry
-</button>
+            <button class="btn btn-danger" style="flex: 1; justify-content: center;" onclick="deleteSelectedUserEntry()">🗑️ Clear Today's Entry</button>
         </div>
     </div>
 
@@ -359,6 +355,7 @@
   <script>
     let optionsData = { names: [], projects: [] };
     let plainTextReport = "";
+    let copyHtmlReport = "";
     let targetDeleteName = "";
     let activeSelectElem = null;
     let activeInputType = "";
@@ -597,6 +594,7 @@
             const res = await fetch('/api/daily-status');
             const data = await res.json();
             plainTextReport = data.report || "";
+            copyHtmlReport = data.copyHtml || data.report || "";
             document.getElementById('report-body').innerHTML = data.htmlReport || "No tasks recorded today.";
         } catch (e) {
             document.getElementById('report-body').innerHTML = "<p style='color: var(--error);'>Unable to fetch status. Verify Google Sheet connection.</p>";
@@ -737,7 +735,7 @@
     }
 
     function copyReport() {
-        const htmlText = document.getElementById('report-body').innerHTML;
+        const htmlText = copyHtmlReport;
 
         try {
             const item = new ClipboardItem({
