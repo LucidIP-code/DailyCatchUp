@@ -226,8 +226,7 @@ app.get("/api/daily-status", async (req, res) => {
       rows.push(rowObj);
     }
 
-    const result = generateReport(rows);
-    res.json(result);
+const result = generateReport(rows, persistentData.projects || []);    res.json(result);
   } catch (err) {
     console.error("Error generating report:", err);
     res.status(500).json({ error: err.message });
