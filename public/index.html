@@ -225,6 +225,18 @@
         .toast-error { border-left: 4px solid var(--error); }
         .toast-info { border-left: 4px solid var(--neon-yellow); }
         .toast-icon { font-size: 1.1rem; }
+.delete-icon-img {
+    height: 18px; /* Scales the 55x68 image down proportionally */
+    width: auto;
+    vertical-align: middle;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.btn:hover .delete-icon-img {
+    transform: scale(1.1); /* Subtle hover effect */
+}
+        
     </style>
 </head>
 <body>
@@ -259,7 +271,9 @@
         <br><br>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="btn btn-primary" style="flex: 2; justify-content: center;" onclick="openConfirmation()">Submit Tasks</button>
-            <button class="btn btn-danger" style="flex: 1; justify-content: center;" onclick="deleteSelectedUserEntry()">🗑️ Clear Today's Entry</button>
+            <button class="btn btn-danger" onclick="deleteSelectedUserEntry()">
+    <img src="/delete.png" alt="Delete" class="delete-icon-img"> Clear Today's Entry
+</button>
         </div>
     </div>
 
