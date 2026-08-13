@@ -4,252 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IP Team Status & Task Entry</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --neon-yellow: hsl(36, 100%, 50%);
-            --neon-hover: #ffb61a;
-            --neon-subtle: rgba(204, 255, 0, 0.12);
-            --bg: #0a0a0a;
-            --surface: #1c1d21;
-            --surface2: #27282d;
-            --border: #383a42;
-            --border-light: #4c4f5a;
-            --text: #f0f1f5;
-            --muted: #9598a6;
-            --radius: 12px;
-            --success: #10b981;
-            --error: #ff3366;
-        }
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 24px 16px 60px;
-            background-image: radial-gradient(circle, #27282d 1px, transparent 1px);
-            background-size: 28px 28px;
-        }
-        .header {
-            max-width: 780px;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .brand { 
-            font-family: 'Syne', sans-serif; 
-            font-weight: 800; 
-            font-size: 1.3rem; 
-            color: var(--neon-yellow); 
-            letter-spacing: -0.5px;
-            text-shadow: 0 0 12px rgba(204, 255, 0, 0.2);
-        }
-        .top-actions { display: flex; gap: 8px; }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            border: none;
-            transition: all 0.2s ease;
-        }
-        .btn-sm {
-            padding: 6px 10px;
-            font-size: 0.78rem;
-        }
-        .btn-primary { 
-            background: var(--neon-yellow); 
-            color: #000000; 
-            box-shadow: 0 0 10px rgba(204, 255, 0, 0.15);
-        }
-        .btn-primary:hover { 
-            background: var(--neon-hover); 
-            box-shadow: 0 0 16px rgba(204, 255, 0, 0.35);
-            transform: translateY(-1px);
-        }
-        .btn-ghost { 
-            background: var(--surface2); 
-            color: var(--text); 
-            border: 1px solid var(--border); 
-        }
-        .btn-ghost:hover { 
-            background: var(--border); 
-            border-color: var(--border-light);
-            color: #ffffff;
-        }
-        .btn-danger { 
-            background: rgba(255, 51, 102, 0.15); 
-            color: #ff668c; 
-            border: 1px solid rgba(255, 51, 102, 0.3); 
-        }
-        .btn-danger:hover { 
-            background: rgba(255, 51, 102, 0.35); 
-            color: #ffffff; 
-        }
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><rect x='4' y='0' width='2' height='2' fill='%235cbfed'/><rect x='3' y='2' width='4' height='2' fill='%235cbfed'/><rect x='2' y='4' width='6' height='3' fill='%235cbfed'/><rect x='1' y='6' width='1' height='2' fill='%23f43f5e'/><rect x='8' y='6' width='1' height='2' fill='%23f43f5e'/><rect x='3' y='7' width='4' height='1' fill='%233f4453'/><rect x='4' y='8' width='2' height='2' fill='%23ffd700'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 
-        .tabs { max-width: 780px; margin: 0 auto 20px; display: flex; gap: 10px; }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-        .tab-btn.active { 
-            background: var(--surface); 
-            color: var(--neon-yellow); 
-            border-color: var(--neon-yellow); 
-            box-shadow: 0 0 10px rgba(204, 255, 0, 0.1);
-        }
-
-        .card {
-            max-width: 780px;
-            margin: 0 auto;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .form-group { margin-bottom: 18px; }
-        .label-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        label { font-size: 0.88rem; font-weight: 600; color: var(--neon-yellow); }
-        select, textarea, input[type="text"] {
-            width: 100%; 
-            padding: 10px 12px; 
-            background: var(--surface2); 
-            border: 1px solid var(--border);
-            color: var(--text); 
-            border-radius: 8px; 
-            font-family: inherit; 
-            font-size: 0.9rem;
-            transition: border-color 0.2s ease;
-        }
-        select:focus, textarea:focus, input[type="text"]:focus { 
-            outline: none;
-            border-color: var(--neon-yellow); 
-            box-shadow: 0 0 8px rgba(204, 255, 0, 0.2);
-        }
-        .task-row { 
-            background: var(--surface2); 
-            padding: 16px; 
-            border-radius: 8px; 
-            margin-bottom: 14px; 
-            border: 1px solid var(--border); 
-        }
-
-        #report-body p { margin-bottom: 6px; }
-        #report-body ul { margin: 2px 0 10px 20px; }
-        #report-body li { margin-bottom: 3px; }
-        #report-body strong { color: var(--neon-yellow); }
-        .delete-icon-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: none;
-            padding: 4px;
-            margin-left: 4px;
-            cursor: pointer;
-            border-radius: 6px;
-            vertical-align: middle;
-            transition: background 0.15s ease;
-        }
-        .delete-icon-btn:hover {
-            background: rgba(255, 51, 102, 0.15);
-        }
-        .delete-icon-svg {
-            display: block;
-            width: 15px;
-            height: 15px;
-            stroke: #ff668c;
-        }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--surface); border: 1px solid var(--border); padding: 24px; border-radius: 12px; width: 90%; max-width: 480px; }
-
-        /* Manage List Elements */
-        .manage-list {
-            max-height: 240px;
-            overflow-y: auto;
-            margin: 14px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .manage-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-
-        /* Toast Container */
-        #toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-        .toast {
-            pointer-events: auto;
-            min-width: 280px;
-            max-width: 400px;
-            background: var(--surface);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 18px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
-            opacity: 0;
-            transform: translateY(20px) scale(0.95);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .toast.show { opacity: 1; transform: translateY(0) scale(1); }
-        .toast-success { border-left: 4px solid var(--success); }
-        .toast-error { border-left: 4px solid var(--error); }
-        .toast-info { border-left: 4px solid var(--neon-yellow); }
-        .toast-icon { font-size: 1.1rem; }
-    </style>
 </head>
 <body>
+    <div id="ag-loader">
+        <div class="pixel-scene">
+            <div class="pixel-stars"></div>
+            <div class="pixel-earth"></div>
+            <div class="pixel-rocket"></div>
+        </div>
+        <div class="ag-text">LAUNCHING...</div>
+    </div>
+
+    <div id="space-background">
+        <div class="stars stars-bg"></div>
+        <div class="stars stars-mid"></div>
+        <div class="stars stars-fg"></div>
+        <div class="earth"></div>
+        <div class="meteor-1"></div>
+        <div class="meteor-2"></div>
+        <div class="bg-rocket-container"><div class="bg-rocket-mini"></div></div>
+        <div class="bg-rocket-container"><div class="bg-rocket-mini"></div></div>
+    </div>
 
     <div class="header">
         <div class="brand">IP Team Portal</div>
@@ -264,7 +43,7 @@
     </div>
 
     <!-- TAB 1: ENTRY FORM -->
-    <div id="tab-entry" class="card tab-content active">
+    <div id="tab-entry" class="card tab-content active" data-tilt data-tilt-max="2" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.05">
         <div class="form-group">
             <div class="label-row">
                 <label>Select Your Name:</label>
@@ -286,9 +65,9 @@
     </div>
 
     <!-- TAB 2: STATUS REPORT VIEW -->
-    <div id="tab-status" class="card tab-content">
+    <div id="tab-status" class="card tab-content" data-tilt data-tilt-max="2" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.05">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="color: var(--neon-yellow);">Today's Status Summary</h3>
+            <h3 style="color: var(--accent);">Today's Status Summary</h3>
             <button class="btn btn-primary" id="copy-btn" onclick="copyReport()">📋 Copy Report</button>
         </div>
         <div id="report-body">Loading status...</div>
@@ -296,8 +75,8 @@
 
     <!-- CUSTOM INPUT MODAL -->
     <div id="input-modal" class="modal">
-        <div class="modal-content" style="border-top: 4px solid var(--neon-yellow);">
-            <h3 id="input-modal-title" style="color: var(--neon-yellow); margin-bottom: 12px;">Add New Entry</h3>
+        <div class="modal-content" style="border-top: 4px solid var(--accent);">
+            <h3 id="input-modal-title" style="color: var(--accent); margin-bottom: 12px;">Add New Entry</h3>
             <div class="form-group">
                 <label id="input-modal-label">Enter Details:</label>
                 <input type="text" id="input-modal-value" placeholder="Type here..." />
@@ -311,10 +90,10 @@
 
     <!-- MANAGE OPTIONS MODAL (For deleting Person/Project names) -->
    <div id="manage-modal" class="modal">
-    <div class="modal-content" style="border-top: 4px solid var(--neon-yellow);">
-        <h3 id="manage-modal-title" style="color: var(--neon-yellow); margin-bottom: 8px;">Manage List</h3>
+    <div class="modal-content" style="border-top: 4px solid var(--accent);">
+        <h3 id="manage-modal-title" style="color: var(--accent); margin-bottom: 8px;">Manage List</h3>
         <p style="font-size: 0.85rem; color: var(--muted);">
-            Removes item from future dropdown choices. <strong style="color: var(--neon-yellow);">Your existing Excel data remains 100% safe and intact.</strong>
+            Removes item from future dropdown choices. <strong style="color: var(--accent);">Your existing Excel data remains 100% safe and intact.</strong>
         </p>
         <div id="manage-list-container" class="manage-list"></div>
         <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
@@ -325,8 +104,8 @@
 
     <!-- SUBMIT CONFIRMATION MODAL -->
     <div id="confirm-modal" class="modal">
-        <div class="modal-content" style="border-top: 4px solid var(--neon-yellow);">
-            <h3 style="color: var(--neon-yellow); margin-bottom: 12px;">Confirm Task Submission</h3>
+        <div class="modal-content" style="border-top: 4px solid var(--accent);">
+            <h3 style="color: var(--accent); margin-bottom: 12px;">Confirm Task Submission</h3>
             <p><strong>Name:</strong> <span id="modal-name"></span></p>
             <div id="modal-tasks" style="margin: 12px 0; max-height: 200px; overflow-y: auto;"></div>
             <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
@@ -340,7 +119,7 @@
     <div id="delete-modal" class="modal">
         <div class="modal-content" style="border-top: 4px solid var(--error);">
             <h3 style="color: var(--error); margin-bottom: 12px;">⚠️ Delete Entry</h3>
-            <p>Are you sure you want to clear today's entry for <strong id="delete-modal-name" style="color: var(--neon-yellow);"></strong>?</p>
+            <p>Are you sure you want to clear today's entry for <strong id="delete-modal-name" style="color: var(--accent);"></strong>?</p>
             <p style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">This will clear their entry in the Google Sheet for today.</p>
             <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
                 <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
@@ -442,7 +221,7 @@
                     <label>Project:</label>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn btn-ghost btn-sm" onclick="openManageModal('project')">⚙️ Manage Projects</button>
-                        <button class="btn btn-danger btn-sm remove-task-btn" onclick="removeTaskRow(this)">✕ Remove</button>
+                        <button class="btn btn-danger btn-sm remove-task-btn" onclick="removeTaskRow(this)">✖️ Remove</button>
                     </div>
                 </div>
                 <select class="project-select" onchange="handleDropdownChange(this, 'project')">${projectOptions}</select>
@@ -485,7 +264,7 @@
             activeSelectElem = selectElem;
             activeInputType = type;
             
-            document.getElementById('input-modal-title').textContent = type === 'name' ? '👤 Add New Name' : '📂 Add New Project';
+            document.getElementById('input-modal-title').textContent = type === 'name' ? '👤 Add New Name' : '📁 Add New Project';
             document.getElementById('input-modal-label').textContent = type === 'name' ? 'Enter Person Name:' : 'Enter Project Name:';
             
             const inputVal = document.getElementById('input-modal-value');
@@ -748,7 +527,96 @@
         }
     }
 
-    window.addEventListener('DOMContentLoaded', init);
+    // Space Background Interactive Click Event
+    document.addEventListener('click', (e) => {
+        // Ignore clicks inside the main application UI components
+        if (e.target.closest('.card') || e.target.closest('.header') || e.target.closest('.tabs') || e.target.closest('#ag-loader')) return;
+        
+        const blastContainer = document.createElement('div');
+        blastContainer.classList.add('blast-container');
+        blastContainer.style.left = e.clientX + 'px';
+        blastContainer.style.top = e.clientY + 'px';
+        
+        const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#5cbfed', '#ffd700'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        const core = document.createElement('div');
+        core.classList.add('blast-core');
+        core.style.setProperty('--blast-color', randomColor);
+        blastContainer.appendChild(core);
+        
+        // Spawn 8 shooting particles
+        for(let i = 0; i < 8; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('blast-particle');
+            particle.style.setProperty('--angle', (i * 45) + 'deg');
+            blastContainer.appendChild(particle);
+        }
+        
+        document.body.appendChild(blastContainer);
+        
+        setTimeout(() => blastContainer.remove(), 800);
+    });
+
+    function initRandomRockets() {
+        const rockets = document.querySelectorAll('.bg-rocket-container');
+        rockets.forEach(r => {
+            setTimeout(() => flyRandomRocket(r), Math.random() * 5000);
+        });
+    }
+
+    function flyRandomRocket(container) {
+        if (!container.isConnected) return;
+        
+        const mini = container.querySelector('.bg-rocket-mini');
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        
+        // Random start side: 0=top, 1=right, 2=bottom, 3=left
+        const side = Math.floor(Math.random() * 4);
+        let startX, startY, endX, endY;
+        const offset = 300;
+
+        if (side === 0) { startX = Math.random() * w; startY = -offset; endX = Math.random() * w; endY = h + offset; }
+        else if (side === 1) { startX = w + offset; startY = Math.random() * h; endX = -offset; endY = Math.random() * h; }
+        else if (side === 2) { startX = Math.random() * w; startY = h + offset; endX = Math.random() * w; endY = -offset; }
+        else { startX = -offset; startY = Math.random() * h; endX = w + offset; endY = Math.random() * h; }
+        
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        
+        // Add 90 degrees because the source rocket image points up (0 deg)
+        mini.style.transform = `rotate(${angle + 90}deg)`;
+        
+        const duration = Math.random() * 20000 + 15000;
+        
+        const anim = container.animate([
+            { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
+            { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
+        ], {
+            duration: duration,
+            easing: 'linear',
+            fill: 'forwards'
+        });
+        
+        anim.onfinish = () => {
+            container.style.opacity = '0';
+            setTimeout(() => flyRandomRocket(container), Math.random() * 5000 + 2000);
+        };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        init();
+        initRandomRockets();
+    });
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const loader = document.getElementById('ag-loader');
+            if (loader) loader.classList.add('hidden');
+        }, 2200);
+    });
 </script>
 </body>
 </html>
+
