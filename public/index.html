@@ -225,16 +225,28 @@
         .toast-error { border-left: 4px solid var(--error); }
         .toast-info { border-left: 4px solid var(--neon-yellow); }
         .toast-icon { font-size: 1.1rem; }
-.delete-icon-img {
-    height: 18px; /* Scales the 55x68 image down proportionally */
-    width: auto;
+.delete-icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
     vertical-align: middle;
-    object-fit: contain;
-    transition: transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.btn:hover .delete-icon-img {
-    transform: scale(1.1); /* Subtle hover effect */
+.delete-icon-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.delete-icon-img {
+    height: 18px; /* Scales your 55x68 image down proportionally */
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
         
     </style>
