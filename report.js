@@ -50,8 +50,7 @@ function generateReport(rows) {
         report += `${person}:\n`;
         
         // Adds direct delete icon in UI status report
-        htmlReport += `<p style="margin:6px 0px 2px 0px;padding:0px;"><strong><u>${person}:</u></strong> <button class="delete-icon-btn" onclick="deleteDirectEntry('${person}')" title="Delete today's entry for ${person}">🗑️</button></p>`;
-
+htmlReport += `<p style="margin:6px 0px 2px 0px;padding:0px;"><strong><u>${person}:</u></strong> <button class="delete-icon-btn" onclick="deleteDirectEntry('${person}')" title="Delete today's entry for ${person}"><img src="/delete.png" alt="Delete" class="delete-icon-img" /></button></p>`;
         if (!tasks || String(tasks).trim() === "") {
             report += `\t  • CatchUp Not filled\n`;
             htmlReport += `<ul style="margin:2px 0px;padding-left:20px;"><li>CatchUp Not Filled yet</li></ul>`;
