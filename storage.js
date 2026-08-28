@@ -8,15 +8,14 @@ const REDIS_INITIALIZED_KEY = `${REDIS_PREFIX}:options:initialized`;
 const REDIS_NAMES_KEY = `${REDIS_PREFIX}:options:names`;
 const REDIS_PROJECTS_KEY = `${REDIS_PREFIX}:options:projects`;
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+// Exact variable names provided by the connected Vercel Upstash integration.
+const redisUrl =
+  process.env.UPSTASH_REDIS_REST_KV_REST_API_URL ||
+  process.env.UPSTASH_REDIS_REST_URL;
+const redisToken =
+  process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN ||
+  process.env.UPSTASH_REDIS_REST_TOKEN;
 const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
-
-function availableUpstashVariables() {
-  return Object.keys(process.env).filter((key) =>
-    /UPSTASH|REDIS|STORAGE/i.test(key)
-  ).sort();
-}
 
 function readLocalData() {
   try {
@@ -58,11 +57,7 @@ async function getOptions() {
 }
 
 function requireRedis() {
-  if (!redis) {
-    throw new Error(
-      `Persistent Redis storage is not configured. Available storage variable names: ${availableUpstashVariables().join(", ") || "none"}`
-    );
-  }
+  if (!redis) throw new Error("Persistent Redis storage is not configured on this deployment.");
 }
 
 async function addOption(type, value) {
