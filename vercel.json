@@ -4,9 +4,12 @@
     { "src": "server.js", "use": "@vercel/node" },
     { "src": "api/options.js", "use": "@vercel/node" },
     { "src": "api/daily-status.js", "use": "@vercel/node" },
-    { "src": "api/people.js", "use": "@vercel/node" }
+    { "src": "api/people.js", "use": "@vercel/node" },
+    { "src": "api/app.js", "use": "@vercel/node" }
   ],
   "routes": [
+    { "src": "/", "dest": "api/app.js" },
+    { "src": "/app", "dest": "server.js" },
     { "src": "/api/options", "dest": "api/options.js" },
     { "src": "/api/daily-status", "dest": "api/daily-status.js" },
     { "src": "/api/people", "dest": "api/people.js" },
