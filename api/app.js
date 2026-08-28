@@ -12,6 +12,13 @@ frame.addEventListener('load',()=>{
   const originalHandle=w.handleDropdownChange;
   const originalSubmit=w.submitInputModal;
   const originalClose=w.closeInputModal;
+  function injectTheme(){
+    if(d.getElementById('people-email-theme'))return;
+    const style=d.createElement('style');
+    style.id='people-email-theme';
+    style.textContent='#person-email-group{margin-top:14px}#person-email-group label{display:block;color:var(--accent);font-size:.82rem;font-weight:700;margin-bottom:6px}#person-email-input{width:100%;box-sizing:border-box;background:#292e38!important;color:#e8edf5!important;border:1px solid #3f4655!important;border-radius:8px!important;padding:11px 12px!important;font:inherit!important;outline:none!important;box-shadow:none!important;transition:border-color .2s,box-shadow .2s}#person-email-input::placeholder{color:#8e97a7!important;opacity:1}#person-email-input:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(92,191,237,.12)!important}#person-email-group input:-webkit-autofill,#person-email-group input:-webkit-autofill:hover,#person-email-group input:-webkit-autofill:focus{-webkit-text-fill-color:#e8edf5!important;-webkit-box-shadow:0 0 0 1000px #292e38 inset!important;transition:background-color 9999s ease-out 0s}' ;
+    d.head.appendChild(style);
+  }
   function ensureEmail(){
     let group=d.getElementById('person-email-group');
     if(group)return group;
@@ -20,8 +27,9 @@ frame.addEventListener('load',()=>{
     group=d.createElement('div');
     group.id='person-email-group';
     group.className='form-group';
-    group.innerHTML='<label>Email ID:</label><input type="email" id="person-email-input" placeholder="name@company.com" autocomplete="email" style="width:100%;box-sizing:border-box">';
+    group.innerHTML='<label>Email ID:</label><input type="email" id="person-email-input" placeholder="name@company.com" autocomplete="email">';
     value.closest('.form-group').insertAdjacentElement('afterend',group);
+    injectTheme();
     return group;
   }
   w.handleDropdownChange=function(selectElem,type){
