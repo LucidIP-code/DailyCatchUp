@@ -8,18 +8,15 @@ const REDIS_INITIALIZED_KEY = `${REDIS_PREFIX}:options:initialized`;
 const REDIS_NAMES_KEY = `${REDIS_PREFIX}:options:names`;
 const REDIS_PROJECTS_KEY = `${REDIS_PREFIX}:options:projects`;
 
-// These are the exact variables created by this project's Vercel/Upstash
-// integration. Keep the standard names as fallbacks for local portability.
-const redisUrl =
-  process.env.UPSTASH_REDIS_REST_KV_REST_URL ||
-  process.env.UPSTASH_REDIS_REST_URL;
-const redisToken =
-  process.env.UPSTASH_REDIS_REST_KV_API_TOKEN ||
-  process.env.UPSTASH_REDIS_REST_TOKEN;
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
-const redis = redisUrl && redisToken
-  ? new Redis({ url: redisUrl, token: redisToken })
-  : null;
+function availableUpstashVariables() {
+  return Object.keys(process.env).filter((key) =>
+    /UPSTASH|REDIS|STORAGE/i.test(key)
+  ).sort();
+}
 
 function readLocalData() {
   try {
@@ -60,10 +57,18 @@ async function getOptions() {
   return sortOptions({ names: names || [], projects: projects || [] });
 }
 
+function requireRedis() {
+  if (!redis) {
+    throw new Error(
+      `Persistent Redis storage is not configured. Available storage variable names: ${availableUpstashVariables().join(", ") || "none"}`
+    );
+  }
+}
+
 async function addOption(type, value) {
   const normalized = String(value || "").trim();
   if (!normalized) return getOptions();
-  if (!redis) throw new Error("Persistent Redis storage is not configured on this deployment.");
+  requireRedis();
   await ensureRedisInitialized();
   await redis.sadd(type === "name" ? REDIS_NAMES_KEY : REDIS_PROJECTS_KEY, normalized);
   return getOptions();
@@ -71,7 +76,7 @@ async function addOption(type, value) {
 
 async function deleteOption(type, value) {
   const normalized = String(value || "").trim();
-  if (!redis) throw new Error("Persistent Redis storage is not configured on this deployment.");
+  requireRedis();
   await ensureRedisInitialized();
   await redis.srem(type === "name" ? REDIS_NAMES_KEY : REDIS_PROJECTS_KEY, normalized);
   return getOptions();
