@@ -7,8 +7,8 @@ const REDIS_PREFIX = "dailycatchup";
 const REDIS_INITIALIZED_KEY = `${REDIS_PREFIX}:options:initialized`;
 const REDIS_NAMES_KEY = `${REDIS_PREFIX}:options:names`;
 const REDIS_PROJECTS_KEY = `${REDIS_PREFIX}:options:projects`;
+const REDIS_PEOPLE_KEY = `${REDIS_PREFIX}:people`;
 
-// Exact variable names provided by the connected Vercel Upstash integration.
 const redisUrl =
   process.env.UPSTASH_REDIS_REST_KV_REST_API_URL ||
   process.env.UPSTASH_REDIS_REST_URL;
@@ -29,10 +29,16 @@ function readLocalData() {
   }
 }
 
+function sortValues(values) {
+  return [...new Set(values || [])].sort((a, b) =>
+    String(a).localeCompare(String(b), undefined, { sensitivity: "base" })
+  );
+}
+
 function sortOptions(data) {
   return {
-    names: [...new Set(data.names || [])].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })),
-    projects: [...new Set(data.projects || [])].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })),
+    names: sortValues(data.names),
+    projects: sortValues(data.projects),
   };
 }
 
@@ -46,6 +52,10 @@ async function ensureRedisInitialized() {
   }
 }
 
+function requireRedis() {
+  if (!redis) throw new Error("Persistent Redis storage is not configured on this deployment.");
+}
+
 async function getOptions() {
   if (!redis) return sortOptions(readLocalData());
   await ensureRedisInitialized();
@@ -54,10 +64,6 @@ async function getOptions() {
     redis.smembers(REDIS_PROJECTS_KEY),
   ]);
   return sortOptions({ names: names || [], projects: projects || [] });
-}
-
-function requireRedis() {
-  if (!redis) throw new Error("Persistent Redis storage is not configured on this deployment.");
 }
 
 async function addOption(type, value) {
@@ -74,7 +80,66 @@ async function deleteOption(type, value) {
   requireRedis();
   await ensureRedisInitialized();
   await redis.srem(type === "name" ? REDIS_NAMES_KEY : REDIS_PROJECTS_KEY, normalized);
+  if (type === "name") await redis.hdel(REDIS_PEOPLE_KEY, normalized);
   return getOptions();
 }
 
-module.exports = { getOptions, addOption, deleteOption, isRedisConfigured: Boolean(redis) };
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
+}
+
+function validatePerson(name, email) {
+  const cleanName = String(name || "").trim();
+  const cleanEmail = normalizeEmail(email);
+  if (!cleanName) throw new Error("Name is required.");
+  if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) throw new Error("A valid email address is required.");
+  return { name: cleanName, email: cleanEmail };
+}
+
+async function getPeople() {
+  if (!redis) {
+    return (await getOptions()).names.map((name) => ({ name, email: "" }));
+  }
+  await ensureRedisInitialized();
+  const [names, emails] = await Promise.all([
+    redis.smembers(REDIS_NAMES_KEY),
+    redis.hgetall(REDIS_PEOPLE_KEY),
+  ]);
+  return sortValues(names || []).map((name) => ({
+    name,
+    email: emails && emails[name] ? String(emails[name]) : "",
+  }));
+}
+
+async function upsertPerson(name, email) {
+  const person = validatePerson(name, email);
+  requireRedis();
+  await ensureRedisInitialized();
+  await Promise.all([
+    redis.sadd(REDIS_NAMES_KEY, person.name),
+    redis.hset(REDIS_PEOPLE_KEY, { [person.name]: person.email }),
+  ]);
+  return getPeople();
+}
+
+async function deletePerson(name) {
+  const cleanName = String(name || "").trim();
+  if (!cleanName) throw new Error("Name is required.");
+  requireRedis();
+  await ensureRedisInitialized();
+  await Promise.all([
+    redis.srem(REDIS_NAMES_KEY, cleanName),
+    redis.hdel(REDIS_PEOPLE_KEY, cleanName),
+  ]);
+  return getPeople();
+}
+
+module.exports = {
+  getOptions,
+  addOption,
+  deleteOption,
+  getPeople,
+  upsertPerson,
+  deletePerson,
+  isRedisConfigured: Boolean(redis),
+};
