@@ -8,12 +8,20 @@
     {
       "src": "api/options.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/daily-status.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/options",
       "dest": "api/options.js"
+    },
+    {
+      "src": "/api/daily-status",
+      "dest": "api/daily-status.js"
     },
     {
       "src": "/(.*)",
