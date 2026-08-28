@@ -8,18 +8,14 @@ const REDIS_INITIALIZED_KEY = `${REDIS_PREFIX}:options:initialized`;
 const REDIS_NAMES_KEY = `${REDIS_PREFIX}:options:names`;
 const REDIS_PROJECTS_KEY = `${REDIS_PREFIX}:options:projects`;
 
-// The Vercel integration may use a custom resource prefix. Support the
-// standard names and the UPSTASH_REDIS_REST prefix used by this project.
+// Exact names created by the Vercel Upstash integration with this project's
+// custom prefix, plus the standard Upstash names for portability.
 const redisUrl =
-  process.env.UPSTASH_REDIS_REST_URL ||
   process.env.UPSTASH_REDIS_REST_KV_REST_URL ||
-  process.env.UPSTASH_REDIS_REST_REST_URL;
+  process.env.UPSTASH_REDIS_REST_URL;
 const redisToken =
-  process.env.UPSTASH_REDIS_REST_TOKEN ||
-  process.env.UPSTASH_REDIS_REST_KV_REST_TOKEN ||
-  process.env.UPSTASH_REDIS_REST_KV_API_TOKEN ||
-  process.env.UPSTASH_REDIS_REST_API_TOKEN ||
-  process.env.UPSTASH_REDIS_REST_REST_TOKEN;
+  process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN ||
+  process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const redis = redisUrl && redisToken
   ? new Redis({ url: redisUrl, token: redisToken })
@@ -46,7 +42,6 @@ function sortOptions(data) {
 
 async function ensureRedisInitialized() {
   if (!redis) return;
-
   const initialized = await redis.setnx(REDIS_INITIALIZED_KEY, "1");
   if (initialized === 1) {
     const seed = readLocalData();
@@ -68,10 +63,7 @@ async function getOptions() {
 async function addOption(type, value) {
   const normalized = String(value || "").trim();
   if (!normalized) return getOptions();
-  if (!redis) {
-    throw new Error("Persistent Redis storage is not configured on this deployment.");
-  }
-
+  if (!redis) throw new Error("Persistent Redis storage is not configured on this deployment.");
   await ensureRedisInitialized();
   await redis.sadd(type === "name" ? REDIS_NAMES_KEY : REDIS_PROJECTS_KEY, normalized);
   return getOptions();
@@ -79,10 +71,7 @@ async function addOption(type, value) {
 
 async function deleteOption(type, value) {
   const normalized = String(value || "").trim();
-  if (!redis) {
-    throw new Error("Persistent Redis storage is not configured on this deployment.");
-  }
-
+  if (!redis) throw new Error("Persistent Redis storage is not configured on this deployment.");
   await ensureRedisInitialized();
   await redis.srem(type === "name" ? REDIS_NAMES_KEY : REDIS_PROJECTS_KEY, normalized);
   return getOptions();
