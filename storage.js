@@ -8,13 +8,13 @@ const REDIS_INITIALIZED_KEY = `${REDIS_PREFIX}:options:initialized`;
 const REDIS_NAMES_KEY = `${REDIS_PREFIX}:options:names`;
 const REDIS_PROJECTS_KEY = `${REDIS_PREFIX}:options:projects`;
 
-// Exact names created by the Vercel Upstash integration with this project's
-// custom prefix, plus the standard Upstash names for portability.
+// These are the exact variables created by this project's Vercel/Upstash
+// integration. Keep the standard names as fallbacks for local portability.
 const redisUrl =
   process.env.UPSTASH_REDIS_REST_KV_REST_URL ||
   process.env.UPSTASH_REDIS_REST_URL;
 const redisToken =
-  process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN ||
+  process.env.UPSTASH_REDIS_REST_KV_API_TOKEN ||
   process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const redis = redisUrl && redisToken
