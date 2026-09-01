@@ -88,6 +88,14 @@ function generateMonthDates() {
   const shortYear = year.toString().slice(-2);
 
   for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dayOfWeek = date.getDay();
+
+    // Saturday (6) and Sunday (0) are standard weekly holidays.
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      continue;
+    }
+
     dateRows.push([`${day}-${monthStr}-${shortYear}`]);
   }
   return dateRows;
@@ -226,7 +234,8 @@ app.get("/api/daily-status", async (req, res) => {
       rows.push(rowObj);
     }
 
-const result = generateReport(rows, persistentData.projects || []);    res.json(result);
+    const result = generateReport(rows, persistentData.projects || []);
+    res.json(result);
   } catch (err) {
     console.error("Error generating report:", err);
     res.status(500).json({ error: err.message });
