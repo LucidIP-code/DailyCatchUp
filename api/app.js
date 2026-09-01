@@ -103,7 +103,7 @@ frame.addEventListener('load',()=>{
     btn.id='holiday-manager-btn'; btn.className='btn btn-ghost'; btn.textContent='📅 Manage Holidays';
     actions.appendChild(btn);
     const modal=d.createElement('div'); modal.id='holiday-modal'; modal.className='modal';
-    modal.innerHTML=`<div class="modal-content" style="border-top:4px solid var(--accent);max-width:620px;width:92%;"><h3 style="color:var(--accent);margin-bottom:12px;">📅 Manage Holidays</h3><p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Maintain government/company holidays by year. These dates will later be used to skip daily reminders and Catch-up posts.</p><div class="holiday-toolbar"><label for="holiday-year">Year:</label><input id="holiday-year" class="holiday-year" type="number" min="2000" max="2100"><button id="holiday-load" class="btn btn-ghost btn-sm">Load</button><button id="holiday-add" class="btn btn-primary btn-sm">+ Add Holiday</button></div><div id="holiday-list"></div><div style="display:flex;justify-content:flex-end;margin-top:16px;"><button id="holiday-close" class="btn btn-ghost">Close</button></div></div>`;
+    modal.innerHTML='<div class="modal-content" style="border-top:4px solid var(--accent);max-width:620px;width:92%;"><h3 style="color:var(--accent);margin-bottom:12px;">📅 Manage Holidays</h3><p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Maintain government/company holidays by year. These dates will later be used to skip daily reminders and Catch-up posts.</p><div class="holiday-toolbar"><label for="holiday-year">Year:</label><input id="holiday-year" class="holiday-year" type="number" min="2000" max="2100"><button id="holiday-load" class="btn btn-ghost btn-sm">Load</button><button id="holiday-add" class="btn btn-primary btn-sm">+ Add Holiday</button></div><div id="holiday-list"></div><div style="display:flex;justify-content:flex-end;margin-top:16px;"><button id="holiday-close" class="btn btn-ghost">Close</button></div></div>';
     d.body.appendChild(modal);
     const yearInput=d.getElementById('holiday-year'); yearInput.value=new Date().getFullYear();
     async function loadHolidays(){
@@ -117,7 +117,7 @@ frame.addEventListener('load',()=>{
         list.querySelectorAll('.holiday-delete').forEach(function(b){b.onclick=async function(){if(!confirm('Delete this holiday?'))return;try{const r=await fetch('/api/holidays',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:b.dataset.date})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to delete holiday');w.showToast('Holiday deleted.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}};});
       }catch(e){list.innerHTML='<div class="holiday-empty">'+escapeHtml(e.message)+'</div>';}
     }
-    function escapeHtml(v){return String(v).replace(/[&<>\'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+    function escapeHtml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
     d.getElementById('holiday-load').onclick=loadHolidays;
     d.getElementById('holiday-close').onclick=function(){modal.style.display='none';};
     btn.onclick=function(){modal.style.display='flex';loadHolidays();};
