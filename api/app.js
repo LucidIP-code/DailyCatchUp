@@ -73,7 +73,7 @@ frame.addEventListener('load',()=>{
     const name=(d.getElementById('input-modal-value').value||'').trim();
     const email=(d.getElementById('person-email-input').value||'').trim();
     if(!name){w.showToast('Please enter a valid person name.','error');return}
-    if(!/^\S+@\S+\.\S+$/.test(email)){w.showToast('Please enter a valid email address.','error');return}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){w.showToast('Please enter a valid email address.','error');return}
     try{
       const response=await fetch('/api/people',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
       const data=await response.json();
@@ -108,7 +108,7 @@ frame.addEventListener('load',()=>{
     const yearInput=d.getElementById('holiday-year'); yearInput.value=new Date().getFullYear();
     async function loadHolidays(){
       const year=String(yearInput.value||'').trim(); const list=d.getElementById('holiday-list');
-      if(!/^\d{4}$/.test(year)){list.innerHTML='<div class="holiday-empty">Enter a valid 4-digit year.</div>';return;}
+      if(!/^[0-9]{4}$/.test(year)){list.innerHTML='<div class="holiday-empty">Enter a valid 4-digit year.</div>';return;}
       list.innerHTML='<div class="holiday-empty">Loading holidays...</div>';
       try{const r=await fetch('/api/holidays?year='+encodeURIComponent(year));const data=await r.json();if(!r.ok)throw new Error(data.error||'Unable to load holidays');
         const holidays=data.holidays||[];
