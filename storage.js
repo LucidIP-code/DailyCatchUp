@@ -48,9 +48,62 @@ async function deletePerson(name){const cleanName=String(name||"").trim();if(!cl
 function holidayKey(year) { return `${REDIS_PREFIX}:holidays:${year}`; }
 function validateYear(year) { const y=String(year||"").trim(); if(!/^\d{4}$/.test(y)) throw new Error("A valid 4-digit year is required."); return y; }
 function validateDate(date, year) { const d=String(date||"").trim(); const y=validateYear(year); if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d.slice(0,4)!==y) throw new Error("Holiday date must be YYYY-MM-DD and match the selected year."); const parsed=new Date(`${d}T00:00:00Z`); if(Number.isNaN(parsed.getTime())||parsed.toISOString().slice(0,10)!==d) throw new Error("Invalid holiday date."); return d; }
-function normalizeHoliday(raw) { if(!raw)return null; if(typeof raw==="object")return {date:String(raw.date),name:String(raw.name||"").trim()}; return null; }
-async function getHolidays(year){requireRedis();const y=validateYear(year);await ensureRedisInitialized();const values=await redis.smembers(holidayKey(y));return (values||[]).map(v=>{try{return normalizeHoliday(JSON.parse(v));}catch{return null;}}).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));}
-async function addHoliday(year,date,name){requireRedis();const y=validateYear(year);const d=validateDate(date,y);const n=String(name||"").trim();if(!n)throw new Error("Holiday name is required.");await ensureRedisInitialized();await redis.sadd(holidayKey(y),JSON.stringify({date:d,name:n}));return getHolidays(y);}
-async function deleteHoliday(year,date){requireRedis();const y=validateYear(year);const d=validateDate(date,y);await ensureRedisInitialized();const holidays=await getHolidays(y);const matches=holidays.filter(h=>h.date===d);for(const h of matches)await redis.srem(holidayKey(y),JSON.stringify(h));return getHolidays(y);}
+function normalizeHoliday(raw, fieldDate) {
+  if (raw == null && !fieldDate) return null;
+  if (typeof raw === "object" && raw !== null) {
+    const date = String(raw.date || fieldDate || "").trim();
+    const name = String(raw.name || raw.title || "").trim();
+    return date && name ? { date, name } : null;
+  }
+  if (fieldDate) {
+    const value = String(raw || "").trim();
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object") return normalizeHoliday(parsed, fieldDate);
+    } catch {}
+    return { date: String(fieldDate), name: value };
+  }
+  return null;
+}
+async function getHolidays(year){
+  requireRedis();
+  const y=validateYear(year);
+  await ensureRedisInitialized();
+  const key=holidayKey(y);
+  // Holiday keys are hashes: field = YYYY-MM-DD, value = holiday name.
+  // The fallback keeps compatibility with an older set-based holiday key.
+  try {
+    const hash=await redis.hgetall(key);
+    if (hash && typeof hash === "object" && !Array.isArray(hash)) {
+      return Object.entries(hash).map(([date,value])=>normalizeHoliday(value,date)).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+    }
+  } catch {}
+  const values=await redis.smembers(key);
+  return (values||[]).map(v=>{try{return normalizeHoliday(JSON.parse(v));}catch{return null;}}).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+}
+async function addHoliday(year,date,name){
+  requireRedis();
+  const y=validateYear(year);
+  const d=validateDate(date,y);
+  const n=String(name||"").trim();
+  if(!n)throw new Error("Holiday name is required.");
+  await ensureRedisInitialized();
+  await redis.hset(holidayKey(y), {[d]: n});
+  return getHolidays(y);
+}
+async function deleteHoliday(year,date){
+  requireRedis();
+  const y=validateYear(year);
+  const d=validateDate(date,y);
+  await ensureRedisInitialized();
+  try { await redis.hdel(holidayKey(y), d); }
+  catch {
+    const holidays=await getHolidays(y);
+    const matches=holidays.filter(h=>h.date===d);
+    for(const h of matches) await redis.srem(holidayKey(y),JSON.stringify(h));
+  }
+  return getHolidays(y);
+}
 
 module.exports={getOptions,addOption,deleteOption,getPeople,upsertPerson,deletePerson,getHolidays,addHoliday,deleteHoliday,isRedisConfigured:Boolean(redis)};
