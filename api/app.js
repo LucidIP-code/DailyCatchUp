@@ -95,7 +95,33 @@ frame.addEventListener('load',()=>{
   function injectHolidayUI(){
     if(d.getElementById('holiday-manager-btn'))return;
     const style=d.createElement('style');
-    style.textContent='#holiday-manager-btn{margin-left:8px}.holiday-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}.holiday-year{width:110px!important}.holiday-table{width:100%;border-collapse:collapse;margin-top:10px}.holiday-table th,.holiday-table td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}.holiday-table th{color:var(--accent);font-size:.8rem}.holiday-delete{padding:5px 9px!important}.holiday-empty{padding:18px;text-align:center;color:var(--muted)}';
+    style.id='holiday-manager-theme';
+    style.textContent=`
+      #holiday-manager-btn{margin-left:8px}
+      #holiday-modal{background:rgba(3,7,12,.78)!important;backdrop-filter:blur(6px)}
+      #holiday-modal .holiday-modal-card{background:var(--surface)!important;color:var(--text);border:1px solid var(--border)!important;border-top:3px solid var(--accent)!important;border-radius:var(--radius)!important;box-shadow:var(--shadow-lg)!important;max-width:680px;width:92%;padding:22px}
+      #holiday-modal .holiday-title{color:var(--accent);font-size:1.05rem;font-weight:800;margin-bottom:7px}
+      #holiday-modal .holiday-description{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:16px}
+      #holiday-modal .holiday-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+      #holiday-modal .holiday-toolbar label{color:var(--accent);font-size:.82rem;font-weight:700}
+      #holiday-modal .holiday-year{width:100px!important;height:38px!important;background:var(--surface2)!important;color:var(--text)!important;border:1px solid var(--border-light)!important;border-radius:8px!important;padding:8px 10px!important;font:inherit!important;outline:none!important}
+      #holiday-modal .holiday-year:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(92,191,237,.12)!important}
+      #holiday-modal .holiday-table-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:rgba(34,37,45,.55)}
+      #holiday-modal .holiday-table{width:100%;border-collapse:collapse;margin:0}
+      #holiday-modal .holiday-table th,#holiday-modal .holiday-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left}
+      #holiday-modal .holiday-table tr:last-child td{border-bottom:0}
+      #holiday-modal .holiday-table th{background:var(--surface2);color:var(--accent);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em}
+      #holiday-modal .holiday-table td{font-size:.84rem;color:var(--text)}
+      #holiday-modal .holiday-table td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+      #holiday-modal .holiday-delete{padding:5px 9px!important}
+      #holiday-modal .holiday-empty{padding:20px;text-align:center;color:var(--muted);background:rgba(34,37,45,.45);border:1px dashed var(--border);border-radius:10px}
+      #holiday-modal .holiday-add-form{display:grid;grid-template-columns:1fr 1.6fr auto;gap:8px;align-items:end;margin-top:14px;padding:12px;background:rgba(34,37,45,.55);border:1px solid var(--border);border-radius:10px}
+      #holiday-modal .holiday-field label{display:block;color:var(--accent);font-size:.72rem;font-weight:700;margin-bottom:5px}
+      #holiday-modal .holiday-field input{width:100%;height:36px;box-sizing:border-box;background:var(--surface2)!important;color:var(--text)!important;border:1px solid var(--border-light)!important;border-radius:7px!important;padding:7px 9px!important;font:inherit!important;outline:none!important}
+      #holiday-modal .holiday-field input:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(92,191,237,.12)!important}
+      #holiday-modal .holiday-footer{display:flex;justify-content:flex-end;margin-top:16px}
+      @media(max-width:600px){#holiday-modal .holiday-add-form{grid-template-columns:1fr}.holiday-toolbar{align-items:stretch}}
+    `;
     d.head.appendChild(style);
     const actions=d.querySelector('.top-actions')||d.querySelector('.header');
     if(!actions)return;
@@ -103,29 +129,40 @@ frame.addEventListener('load',()=>{
     btn.id='holiday-manager-btn'; btn.className='btn btn-ghost'; btn.textContent='📅 Manage Holidays';
     actions.appendChild(btn);
     const modal=d.createElement('div'); modal.id='holiday-modal'; modal.className='modal';
-    modal.innerHTML='<div class="modal-content" style="border-top:4px solid var(--accent);max-width:620px;width:92%;"><h3 style="color:var(--accent);margin-bottom:12px;">📅 Manage Holidays</h3><p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Maintain government/company holidays by year. These dates will later be used to skip daily reminders and Catch-up posts.</p><div class="holiday-toolbar"><label for="holiday-year">Year:</label><input id="holiday-year" class="holiday-year" type="number" min="2000" max="2100"><button id="holiday-load" class="btn btn-ghost btn-sm">Load</button><button id="holiday-add" class="btn btn-primary btn-sm">+ Add Holiday</button></div><div id="holiday-list"></div><div style="display:flex;justify-content:flex-end;margin-top:16px;"><button id="holiday-close" class="btn btn-ghost">Close</button></div></div>';
+    modal.innerHTML='<div class="holiday-modal-card"><h3 class="holiday-title">📅 Manage Holidays</h3><p class="holiday-description">Maintain government/company holidays by year. These dates will later be used to skip daily reminders and Catch-up posts.</p><div class="holiday-toolbar"><label for="holiday-year">Year:</label><input id="holiday-year" class="holiday-year" type="number" min="2000" max="2100"><button id="holiday-load" class="btn btn-ghost btn-sm">Load</button><button id="holiday-add-toggle" class="btn btn-primary btn-sm">+ Add Holiday</button></div><div id="holiday-list"></div><div id="holiday-add-form" class="holiday-add-form" style="display:none"><div class="holiday-field"><label for="holiday-date">Date</label><input id="holiday-date" type="date"></div><div class="holiday-field"><label for="holiday-name">Holiday Name</label><input id="holiday-name" type="text" placeholder="e.g. Republic Day" maxlength="100"></div><button id="holiday-save" class="btn btn-primary btn-sm">Save</button></div><div class="holiday-footer"><button id="holiday-close" class="btn btn-ghost">Close</button></div></div>';
     d.body.appendChild(modal);
     const yearInput=d.getElementById('holiday-year'); yearInput.value=new Date().getFullYear();
+    const addForm=d.getElementById('holiday-add-form');
+    const dateInput=d.getElementById('holiday-date');
+    const nameInput=d.getElementById('holiday-name');
+    function syncDateYear(){if(/^\\d{4}$/.test(String(yearInput.value||'')))dateInput.min=yearInput.value+'-01-01',dateInput.max=yearInput.value+'-12-31';}
+    syncDateYear();
     async function loadHolidays(){
       const year=String(yearInput.value||'').trim(); const list=d.getElementById('holiday-list');
       if(!/^\\d{4}$/.test(year)){list.innerHTML='<div class="holiday-empty">Enter a valid 4-digit year.</div>';return;}
+      syncDateYear();
       list.innerHTML='<div class="holiday-empty">Loading holidays...</div>';
       try{const r=await fetch('/api/holidays?year='+encodeURIComponent(year));const data=await r.json();if(!r.ok)throw new Error(data.error||'Unable to load holidays');
         const holidays=data.holidays||[];
         if(!holidays.length){list.innerHTML='<div class="holiday-empty">No holidays configured for '+year+'.</div>';return;}
-        list.innerHTML='<table class="holiday-table"><thead><tr><th>Date</th><th>Holiday</th><th></th></tr></thead><tbody>'+holidays.map(function(h){return '<tr><td>'+escapeHtml(h.date)+'</td><td>'+escapeHtml(h.name)+'</td><td style="text-align:right"><button class="btn btn-danger btn-sm holiday-delete" data-date="'+escapeHtml(h.date)+'">Delete</button></td></tr>';}).join('')+'</tbody></table>';
+        list.innerHTML='<div class="holiday-table-wrap"><table class="holiday-table"><thead><tr><th>Date</th><th>Holiday</th><th></th></tr></thead><tbody>'+holidays.map(function(h){return '<tr><td>'+escapeHtml(h.date)+'</td><td>'+escapeHtml(h.name)+'</td><td style="text-align:right"><button class="btn btn-danger btn-sm holiday-delete" data-date="'+escapeHtml(h.date)+'">Delete</button></td></tr>';}).join('')+'</tbody></table></div>';
         list.querySelectorAll('.holiday-delete').forEach(function(b){b.onclick=async function(){if(!confirm('Delete this holiday?'))return;try{const r=await fetch('/api/holidays',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:b.dataset.date})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to delete holiday');w.showToast('Holiday deleted.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}};});
       }catch(e){list.innerHTML='<div class="holiday-empty">'+escapeHtml(e.message)+'</div>';}
     }
-    function escapeHtml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+    function escapeHtml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');}
     d.getElementById('holiday-load').onclick=loadHolidays;
-    d.getElementById('holiday-close').onclick=function(){modal.style.display='none';};
-    btn.onclick=function(){modal.style.display='flex';loadHolidays();};
-    d.getElementById('holiday-add').onclick=async function(){
+    yearInput.addEventListener('change',syncDateYear);
+    d.getElementById('holiday-close').onclick=function(){modal.style.display='none';addForm.style.display='none';};
+    btn.onclick=function(){modal.style.display='flex';addForm.style.display='none';loadHolidays();};
+    d.getElementById('holiday-add-toggle').onclick=function(){syncDateYear();addForm.style.display=addForm.style.display==='none'?'grid':'none';if(addForm.style.display==='grid'){dateInput.value='';nameInput.value='';dateInput.focus();}};
+    d.getElementById('holiday-save').onclick=async function(){
       const year=String(yearInput.value||'').trim();
-      const date=prompt('Holiday date (YYYY-MM-DD):',''); if(date===null)return;
-      const name=prompt('Holiday name:',''); if(name===null)return;
-      try{const r=await fetch('/api/holidays',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:date,name:name})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to add holiday');w.showToast('Holiday added.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}
+      const date=String(dateInput.value||'').trim();
+      const name=String(nameInput.value||'').trim();
+      if(!/^\\d{4}$/.test(year)){w.showToast('Enter a valid 4-digit year.','error');return;}
+      if(!date){w.showToast('Select a holiday date.','error');return;}
+      if(!name){w.showToast('Enter a holiday name.','error');return;}
+      try{const r=await fetch('/api/holidays',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:date,name:name})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to add holiday');w.showToast('Holiday added.','success');addForm.style.display='none';loadHolidays();}catch(e){w.showToast(e.message,'error');}
     };
   }
 
