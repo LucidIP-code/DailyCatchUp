@@ -111,20 +111,21 @@ frame.addEventListener('load',()=>{
       if(!/^\\d{4}$/.test(year)){list.innerHTML='<div class="holiday-empty">Enter a valid 4-digit year.</div>';return;}
       list.innerHTML='<div class="holiday-empty">Loading holidays...</div>';
       try{const r=await fetch('/api/holidays?year='+encodeURIComponent(year));const data=await r.json();if(!r.ok)throw new Error(data.error||'Unable to load holidays');
-        const holidays=data.holidays||[]; if(!holidays.length){list.innerHTML='<div class="holiday-empty">No holidays configured for '+year+'.</div>';return;}
-        list.innerHTML='<table class="holiday-table"><thead><tr><th>Date</th><th>Holiday</th><th></th></tr></thead><tbody>'+holidays.map(h=>`<tr><td>${h.date}</td><td>${escapeHtml(h.name)}</td><td style="text-align:right"><button class="btn btn-danger btn-sm holiday-delete" data-date="${h.date}">Delete</button></td></tr>`).join('')+'</tbody></table>';
-        list.querySelectorAll('.holiday-delete').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this holiday?'))return;try{const r=await fetch('/api/holidays',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({year,date:b.dataset.date})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to delete holiday');w.showToast('Holiday deleted.','success');loadHolidays();}catch(e){w.showToast(e.message,'error')}});
+        const holidays=data.holidays||[];
+        if(!holidays.length){list.innerHTML='<div class="holiday-empty">No holidays configured for '+year+'.</div>';return;}
+        list.innerHTML='<table class="holiday-table"><thead><tr><th>Date</th><th>Holiday</th><th></th></tr></thead><tbody>'+holidays.map(function(h){return '<tr><td>'+escapeHtml(h.date)+'</td><td>'+escapeHtml(h.name)+'</td><td style="text-align:right"><button class="btn btn-danger btn-sm holiday-delete" data-date="'+escapeHtml(h.date)+'">Delete</button></td></tr>';}).join('')+'</tbody></table>';
+        list.querySelectorAll('.holiday-delete').forEach(function(b){b.onclick=async function(){if(!confirm('Delete this holiday?'))return;try{const r=await fetch('/api/holidays',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:b.dataset.date})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to delete holiday');w.showToast('Holiday deleted.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}};});
       }catch(e){list.innerHTML='<div class="holiday-empty">'+escapeHtml(e.message)+'</div>';}
     }
-    function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+    function escapeHtml(v){return String(v).replace(/[&<>\'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
     d.getElementById('holiday-load').onclick=loadHolidays;
-    d.getElementById('holiday-close').onclick=()=>modal.style.display='none';
-    btn.onclick=()=>{modal.style.display='flex';loadHolidays();};
-    d.getElementById('holiday-add').onclick=async()=>{
+    d.getElementById('holiday-close').onclick=function(){modal.style.display='none';};
+    btn.onclick=function(){modal.style.display='flex';loadHolidays();};
+    d.getElementById('holiday-add').onclick=async function(){
       const year=String(yearInput.value||'').trim();
       const date=prompt('Holiday date (YYYY-MM-DD):',''); if(date===null)return;
       const name=prompt('Holiday name:',''); if(name===null)return;
-      try{const r=await fetch('/api/holidays',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year,date,name})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to add holiday');w.showToast('Holiday added.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}
+      try{const r=await fetch('/api/holidays',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:date,name:name})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to add holiday');w.showToast('Holiday added.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}
     };
   }
 
