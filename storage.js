@@ -95,6 +95,8 @@ async function getHolidays(year){
     holidays=(values||[]).map(v=>{try{return normalizeHoliday(JSON.parse(v));}catch{return null;}}).filter(Boolean);
   } else if(keyType==="string") {
     holidays=normalizeHolidayCollection(await redis.get(key));
+  } else if(keyType==="json") {
+    holidays=normalizeHolidayCollection(await redis.json.get(key));
   } else {
     throw new Error(`Unsupported Redis type for ${key}: ${keyType}`);
   }
