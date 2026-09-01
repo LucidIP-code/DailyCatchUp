@@ -73,7 +73,7 @@ frame.addEventListener('load',()=>{
     const name=(d.getElementById('input-modal-value').value||'').trim();
     const email=(d.getElementById('person-email-input').value||'').trim();
     if(!name){w.showToast('Please enter a valid person name.','error');return}
-    if(!/^\\S+@\\S+\\.\\S+$/.test(email)){w.showToast('Please enter a valid email address.','error');return}
+    if(!/^\S+@\S+\.\S+$/.test(email)){w.showToast('Please enter a valid email address.','error');return}
     try{
       const response=await fetch('/api/people',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
       const data=await response.json();
@@ -95,7 +95,7 @@ frame.addEventListener('load',()=>{
   function injectHolidayUI(){
     if(d.getElementById('holiday-manager-btn'))return;
     const style=d.createElement('style');
-    style.textContent='#holiday-manager-btn{margin-left:8px}.holiday-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}.holiday-year{width:110px!important}.holiday-table{width:100%;border-collapse:collapse;margin-top:10px}.holiday-table th,.holiday-table td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}.holiday-table th{color:var(--accent);font-size:.8rem}.holiday-delete{padding:5px 9px!important}.holiday-empty{padding:18px;text-align:center;color:var(--muted)}';
+    style.textContent='#holiday-manager-btn{margin-left:8px}.holiday-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}.holiday-toolbar>label{color:var(--accent);font-size:1rem;font-weight:700}.holiday-year{width:110px!important;height:40px!important;box-sizing:border-box;background:#292e38!important;color:#e8edf5!important;border:1px solid #3f4655!important;border-radius:8px!important;padding:8px 12px!important;font-size:1rem!important;font-weight:600!important;outline:none!important;appearance:textfield;-moz-appearance:textfield;transition:border-color .2s,box-shadow .2s}.holiday-year:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(92,191,237,.12)!important}.holiday-year::-webkit-outer-spin-button,.holiday-year::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.holiday-table{width:100%;border-collapse:collapse;margin-top:10px}.holiday-table th,.holiday-table td{padding:11px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}.holiday-table th{color:var(--accent);font-size:.9rem}.holiday-table td{font-size:1rem;font-weight:500}.holiday-delete{padding:6px 10px!important}.holiday-empty{padding:18px;text-align:center;color:var(--muted);font-size:.95rem}';
     d.head.appendChild(style);
     const actions=d.querySelector('.top-actions')||d.querySelector('.header');
     if(!actions)return;
@@ -103,12 +103,12 @@ frame.addEventListener('load',()=>{
     btn.id='holiday-manager-btn'; btn.className='btn btn-ghost'; btn.textContent='📅 Manage Holidays';
     actions.appendChild(btn);
     const modal=d.createElement('div'); modal.id='holiday-modal'; modal.className='modal';
-    modal.innerHTML='<div class="modal-content" style="border-top:4px solid var(--accent);max-width:620px;width:92%;"><h3 style="color:var(--accent);margin-bottom:12px;">📅 Manage Holidays</h3><p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Maintain government/company holidays by year. These dates will later be used to skip daily reminders and Catch-up posts.</p><div class="holiday-toolbar"><label for="holiday-year">Year:</label><input id="holiday-year" class="holiday-year" type="number" min="2000" max="2100"><button id="holiday-load" class="btn btn-ghost btn-sm">Load</button><button id="holiday-add" class="btn btn-primary btn-sm">+ Add Holiday</button></div><div id="holiday-list"></div><div style="display:flex;justify-content:flex-end;margin-top:16px;"><button id="holiday-close" class="btn btn-ghost">Close</button></div></div>';
+    modal.innerHTML='<div class="modal-content" style="border-top:4px solid var(--accent);max-width:620px;width:92%;"><h3 style="color:var(--accent);margin-bottom:12px;">📅 Manage Holidays</h3><p style="font-size:.95rem;color:var(--muted);margin-bottom:16px;">Maintain government/company holidays by year. These dates will later be used to skip daily reminders and Catch-up posts.</p><div class="holiday-toolbar"><label for="holiday-year">Year:</label><input id="holiday-year" class="holiday-year" type="number" min="2000" max="2100"><button id="holiday-load" class="btn btn-ghost btn-sm">Load</button><button id="holiday-add" class="btn btn-primary btn-sm">+ Add Holiday</button></div><div id="holiday-list"></div><div style="display:flex;justify-content:flex-end;margin-top:16px;"><button id="holiday-close" class="btn btn-ghost">Close</button></div></div>';
     d.body.appendChild(modal);
     const yearInput=d.getElementById('holiday-year'); yearInput.value=new Date().getFullYear();
     async function loadHolidays(){
       const year=String(yearInput.value||'').trim(); const list=d.getElementById('holiday-list');
-      if(!/^\\d{4}$/.test(year)){list.innerHTML='<div class="holiday-empty">Enter a valid 4-digit year.</div>';return;}
+      if(!/^\d{4}$/.test(year)){list.innerHTML='<div class="holiday-empty">Enter a valid 4-digit year.</div>';return;}
       list.innerHTML='<div class="holiday-empty">Loading holidays...</div>';
       try{const r=await fetch('/api/holidays?year='+encodeURIComponent(year));const data=await r.json();if(!r.ok)throw new Error(data.error||'Unable to load holidays');
         const holidays=data.holidays||[];
