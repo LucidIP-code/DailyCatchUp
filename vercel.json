@@ -8,6 +8,7 @@
     { "src": "api/people-feed.js", "use": "@vercel/node" },
     { "src": "api/holidays.js", "use": "@vercel/node" },
     { "src": "api/today-holiday-feed.js", "use": "@vercel/node" },
+    { "src": "api/previous-status.js", "use": "@vercel/node" },
     { "src": "api/app.js", "use": "@vercel/node" }
   ],
   "routes": [
@@ -19,6 +20,7 @@
     { "src": "/api/people-feed", "dest": "api/people-feed.js" },
     { "src": "/api/holidays", "dest": "api/holidays.js" },
     { "src": "/api/today-holiday-feed", "dest": "api/today-holiday-feed.js" },
+    { "src": "/api/previous-status", "dest": "api/previous-status.js" },
     { "src": "/(.*)", "dest": "server.js" }
   ]
 }
