@@ -49,8 +49,6 @@ function generateReport(rows, knownProjects = []) {
         };
     }
 
-    // Known project/heading names, longest first so "PrintInspection - KBPS"
-    // is matched whole before the shorter "PrintInspection" could match it.
     const projectHeadingRegexes = [...knownProjects]
         .filter(Boolean)
         .sort((a, b) => b.length - a.length)
@@ -62,18 +60,12 @@ function generateReport(rows, knownProjects = []) {
     const fallbackHeadingRegex = /^([A-Za-z0-9][A-Za-z0-9 ()]{0,49}?)\s*(?:\s*-\s*|:\s*)(.+)$/;
 
     function matchHeading(line) {
-        // 1. Prefer an exact known project-name match first. This handles
-        //    project names that themselves contain a dash, e.g.
-        //    "PrintInspection - KBPS", which the generic regex below would
-        //    otherwise split at the wrong dash.
         for (const { name, regex } of projectHeadingRegexes) {
             const m = line.match(regex);
             if (m) {
                 return { heading: name, content: m[1].trim() };
             }
         }
-        // 2. Fall back to the generic pattern for anything not in the list
-        //    (e.g. free-typed sub-headings like "SNIS:").
         const m2 = line.match(fallbackHeadingRegex);
         if (m2) {
             return { heading: m2[1].trim(), content: m2[2].trim() };
@@ -81,8 +73,6 @@ function generateReport(rows, knownProjects = []) {
         return null;
     }
 
-    // Strip a stray leading bullet/dash marker so it never gets doubled up
-    // with the <li> bullet the HTML report already renders.
     function stripLeadingMarker(line) {
         return line.replace(/^[•\u2022\-\*]\s*/, '').trim();
     }
@@ -100,12 +90,7 @@ function generateReport(rows, knownProjects = []) {
         if (!person || person.trim() === "" || person.trim() === "__PowerAppsId__") continue;
 
         report += `${person}:\n`;
-
-        // Adds direct delete icon in UI status report only.
-        // "user-select:none" keeps it out of manual copy/paste too,
-        // but the primary defense is that copyHtml never includes it.
         htmlReport += `<p style="margin:6px 0px 2px 0px;padding:0px;"><strong><u>${person}:</u></strong> <button class="delete-icon-btn" onclick="deleteDirectEntry('${person}')" title="Delete today's entry for ${person}" style="user-select:none;-webkit-user-select:none;"><svg class="delete-icon-svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg></button></p>`;
-        // Copy-safe version: same header, no delete button at all.
         copyHtml += `<p style="margin:6px 0px 2px 0px;padding:0px;"><strong><u>${person}:</u></strong></p>`;
 
         if (!tasks || String(tasks).trim() === "") {
@@ -136,7 +121,7 @@ function generateReport(rows, knownProjects = []) {
                 groups.push(currentGroup);
             } else {
                 const cleanItem = stripLeadingMarker(rawLine);
-                if (!currentGroup || currentGroup.heading !== null) {
+                if (!currentGroup) {
                     currentGroup = { heading: null, items: [] };
                     groups.push(currentGroup);
                 }
