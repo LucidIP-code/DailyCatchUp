@@ -318,7 +318,7 @@ app.post("/api/submit-task", async (req, res) => {
         const lines = t.task.split("\n").map(l => l.trim()).filter(Boolean);
         if (lines.length === 0) return "";
         const firstLine = `${t.project} - ${lines[0].replace(/^[•\-\*\d+\.]\s*/, '')}`;
-        const restLines = lines.slice(1).map(line => `  • ${line.replace(/^[•\-\*\d+\.]\s*/, '')}`);
+        const restLines = lines.slice(1).map(line => `   ${line.replace(/^[•\-\*\d+\.]\s*/, '')}`);
         return [firstLine, ...restLines].join("\n");
       })
       .filter(Boolean)
