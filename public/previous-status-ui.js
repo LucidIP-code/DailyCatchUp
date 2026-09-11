@@ -78,6 +78,39 @@
     }
   }
 
+  function showLeaveConfirmation(name) {
+    return new Promise((resolve) => {
+      let modal = $('leave-confirm-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'leave-confirm-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+          <div class="modal-content" style="border-top: 4px solid var(--accent);">
+            <h3 style="color: var(--accent); margin-bottom: 12px;">🏖️ Mark On Leave</h3>
+            <p>Are you sure you want to mark <strong id="leave-confirm-name" style="color: var(--accent);"></strong> as On Leave for today?</p>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">Any existing entry for this person today will be replaced with <strong>"On Leave"</strong>.</p>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+              <button class="btn btn-ghost" id="leave-confirm-cancel">Cancel</button>
+              <button class="btn btn-primary" id="leave-confirm-ok">Yes, Mark On Leave</button>
+            </div>
+          </div>`;
+        document.body.appendChild(modal);
+      }
+
+      $('leave-confirm-name').textContent = name;
+      modal.style.display = 'flex';
+
+      const finish = (value) => {
+        modal.style.display = 'none';
+        resolve(value);
+      };
+
+      $('leave-confirm-cancel').onclick = () => finish(false);
+      $('leave-confirm-ok').onclick = () => finish(true);
+    });
+  }
+
   async function loadPreviousStatus() {
     const name = selectedName();
     if (!name || name === '__ADD_NEW__') {
@@ -115,9 +148,7 @@
       return;
     }
 
-    const confirmed = window.confirm(
-      `Are you sure you want to mark ${name} as On Leave for today?\n\nAny existing entry for this person today will be replaced with "On Leave".`
-    );
+    const confirmed = await showLeaveConfirmation(name);
     if (!confirmed) return;
 
     const buttons = $('individual-status-actions')?.querySelectorAll('button');
