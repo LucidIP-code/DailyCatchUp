@@ -100,7 +100,8 @@
     if (!card) return;
 
     Array.from(card.children).forEach(el => {
-      if (el === container || el.id === 'individual-status-actions' || el.classList.contains('form-group')) return;
+      // The leave status panel must remain visible when the task entry area is hidden.
+      if (el === container || el.id === 'individual-status-actions' || el.id === 'leave-status-panel' || el.classList.contains('form-group')) return;
       if (el.tagName === 'BUTTON' || el.tagName === 'BR' || (el.tagName === 'DIV' && el.querySelector('button'))) {
         el.style.display = show ? '' : 'none';
       }
