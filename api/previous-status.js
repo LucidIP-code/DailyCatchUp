@@ -15,13 +15,6 @@ if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
 const auth = new google.auth.GoogleAuth(authOptions);
 const sheets = google.sheets({ version: "v4", auth });
 
-function getWorkingDayBeforeToday() {
-  const date = new Date();
-  date.setDate(date.getDate() - 1);
-  while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() - 1);
-  return date;
-}
-
 function sheetNameFor(date) {
   const month = date.toLocaleDateString("en-US", { month: "short" });
   return `${month}-${String(date.getFullYear()).slice(-2)}`;
@@ -140,13 +133,63 @@ async function findOrCreatePersonColumn(spreadsheetId, sheetName, name) {
   return { rows, index };
 }
 
-async function findTodayRow(rows, date) {
+function findDateRow(rows, date) {
   const wanted = dateKeysFor(date);
   for (let i = 1; i < rows.length; i++) {
     const value = String(rows[i][0] || "").trim().toLowerCase();
-    if (wanted.has(value)) return i + 1;
+    if (wanted.has(value)) return i;
   }
   return -1;
+}
+
+async function findLastFilledStatus(spreadsheetId, name, knownProjects) {
+  const cache = new Map();
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() - 1);
+
+  // Search backward by actual calendar date. Skip weekends, holidays, and
+  // empty workdays naturally by continuing until a genuinely filled task
+  // status is found. Month boundaries are handled automatically.
+  for (let daysBack = 1; daysBack <= 366; daysBack++) {
+    const sheetName = sheetNameFor(date);
+    let rows;
+
+    if (cache.has(sheetName)) {
+      rows = cache.get(sheetName);
+    } else {
+      try {
+        rows = await readSheet(spreadsheetId, sheetName);
+      } catch (error) {
+        rows = [];
+      }
+      cache.set(sheetName, rows);
+    }
+
+    if (rows.length) {
+      const headers = rows[0] || [];
+      const nameIndex = headers.findIndex(h => String(h || "").trim() === name);
+
+      if (nameIndex >= 0) {
+        const rowIndex = findDateRow(rows, date);
+        if (rowIndex >= 0) {
+          const status = String(rows[rowIndex]?.[nameIndex] || "").trim();
+          const tasks = parseStatus(status, knownProjects);
+
+          if (tasks.length) {
+            return {
+              date: date.toISOString().slice(0, 10),
+              tasks
+            };
+          }
+        }
+      }
+    }
+
+    date.setDate(date.getDate() - 1);
+  }
+
+  return null;
 }
 
 module.exports = async (req, res) => {
@@ -158,24 +201,17 @@ module.exports = async (req, res) => {
     if (!spreadsheetId) return res.status(500).json({ error: "SPREADSHEET_ID is not configured." });
 
     if (req.method === "GET") {
-      const previousDate = getWorkingDayBeforeToday();
-      const sheetName = sheetNameFor(previousDate);
-      const rows = await readSheet(spreadsheetId, sheetName);
-      if (!rows.length) return res.json({ name, tasks: [] });
-
-      const headers = rows[0] || [];
-      const nameIndex = headers.findIndex(h => String(h || "").trim() === name);
-      if (nameIndex < 0) return res.json({ name, tasks: [] });
-
-      const rowIndex = await findTodayRow(rows, previousDate);
-      if (rowIndex < 0) return res.json({ name, tasks: [] });
-
-      const status = rows[rowIndex - 1]?.[nameIndex] || "";
       const options = await getOptions();
+      const result = await findLastFilledStatus(spreadsheetId, name, options.projects || []);
+
+      if (!result) {
+        return res.json({ name, tasks: [] });
+      }
+
       return res.json({
         name,
-        date: previousDate.toISOString().slice(0, 10),
-        tasks: parseStatus(status, options.projects || [])
+        date: result.date,
+        tasks: result.tasks
       });
     }
 
@@ -185,12 +221,12 @@ module.exports = async (req, res) => {
       await ensureSheet(spreadsheetId, sheetName);
 
       const { rows, index } = await findOrCreatePersonColumn(spreadsheetId, sheetName, name);
-      const rowIndex = await findTodayRow(rows, today);
+      const rowIndex = findDateRow(rows, today);
       if (rowIndex < 0) {
         return res.status(400).json({ error: "Today's date was not found in the sheet." });
       }
 
-      const range = `${sheetName}!${columnLetter(index)}${rowIndex}`;
+      const range = `${sheetName}!${columnLetter(index)}${rowIndex + 1}`;
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range,
