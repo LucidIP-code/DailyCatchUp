@@ -50,7 +50,7 @@ function columnLetter(index) {
 
 function parseStatus(status, knownProjects) {
   const text = String(status || "").trim();
-  if (!text || /^catchup not filled$/i.test(text) || /^on leave$/i.test(text)) return [];
+  if (!text || /^catchup not filled$/i.test(text) || /^on leave$/i.test(text) || /^first half leave$/i.test(text)) return [];
 
   const projects = (knownProjects || [])
     .map(p => String(p).trim())
@@ -192,6 +192,26 @@ async function findLastFilledStatus(spreadsheetId, name, knownProjects) {
   return null;
 }
 
+async function getTodayStatus(spreadsheetId, name) {
+  const today = new Date();
+  const sheetName = sheetNameFor(today);
+  let rows;
+  try {
+    rows = await readSheet(spreadsheetId, sheetName);
+  } catch (error) {
+    return "";
+  }
+
+  if (!rows.length) return "";
+  const headers = rows[0] || [];
+  const nameIndex = headers.findIndex(h => String(h || "").trim() === name);
+  if (nameIndex < 0) return "";
+
+  const rowIndex = findDateRow(rows, today);
+  if (rowIndex < 0) return "";
+  return String(rows[rowIndex]?.[nameIndex] || "").trim();
+}
+
 module.exports = async (req, res) => {
   try {
     const name = String(req.method === "GET" ? req.query.name || "" : req.body?.name || "").trim();
@@ -201,6 +221,11 @@ module.exports = async (req, res) => {
     if (!spreadsheetId) return res.status(500).json({ error: "SPREADSHEET_ID is not configured." });
 
     if (req.method === "GET") {
+      if (String(req.query.mode || "").toLowerCase() === "today") {
+        const status = await getTodayStatus(spreadsheetId, name);
+        return res.json({ name, status });
+      }
+
       const options = await getOptions();
       const result = await findLastFilledStatus(spreadsheetId, name, options.projects || []);
 
@@ -216,6 +241,17 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === "POST") {
+      const action = String(req.body?.action || "leave").trim().toLowerCase();
+      const statusByAction = {
+        leave: "On Leave",
+        "first-half": "First Half Leave",
+        unmark: ""
+      };
+
+      if (!Object.prototype.hasOwnProperty.call(statusByAction, action)) {
+        return res.status(400).json({ error: "Invalid leave action." });
+      }
+
       const today = new Date();
       const sheetName = sheetNameFor(today);
       await ensureSheet(spreadsheetId, sheetName);
@@ -231,10 +267,15 @@ module.exports = async (req, res) => {
         spreadsheetId,
         range,
         valueInputOption: "USER_ENTERED",
-        requestBody: { values: [["On Leave"]] }
+        requestBody: { values: [[statusByAction[action]]] }
       });
 
-      return res.json({ success: true, message: `Marked ${name} as On Leave.` });
+      const messages = {
+        leave: `Marked ${name} as On Leave.`,
+        "first-half": `Marked ${name} as First Half Leave.`,
+        unmark: `On Leave status removed for ${name}.`
+      };
+      return res.json({ success: true, status: statusByAction[action], message: messages[action] });
     }
 
     res.setHeader("Allow", ["GET", "POST"]);
