@@ -108,7 +108,7 @@
             opacity: 0;
         }
         .bg-rocket-mini {
-            width: 250px; height: 250px;
+            width: 150px; height: 150px;
             background: url('images/pixelartrocket.png') no-repeat center center;
             background-size: contain;
             image-rendering: pixelated;
@@ -551,3 +551,107 @@
             0% { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(1); opacity: 1; }
             100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-100px) scale(0); opacity: 0; }
         }
+
+
+        /* Cinematic rocket collision: layered flash, fire, smoke and debris */
+        .rocket-crash {
+            position:fixed; width:1px; height:1px; pointer-events:none; z-index:2147483647;
+        }
+        .rocket-crash-flash {
+            position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;
+            background:#fff;transform:translate(-50%,-50%) scale(0);
+            box-shadow:0 0 20px 10px #fff,0 0 55px 25px #ffb000,0 0 110px 40px rgba(255,70,0,.7);
+            animation:crashFlash .45s ease-out forwards;
+        }
+        .rocket-crash-fireball {
+            position:absolute;left:0;top:0;width:76px;height:76px;border-radius:50%;
+            transform:translate(-50%,-50%) scale(.05);
+            background:radial-gradient(circle,#fff 0 8%,#fff2a8 15%,#ffcf33 28%,#ff7b00 50%,#e52d27 68%,transparent 72%);
+            filter:blur(.5px);animation:crashFire 1.35s cubic-bezier(.2,.7,.2,1) forwards;
+        }
+        .rocket-crash-fireball:before,.rocket-crash-fireball:after {
+            content:"";position:absolute;left:50%;top:50%;width:115px;height:32px;border-radius:50%;
+            background:radial-gradient(ellipse,#ffcf33 0 18%,#ff6a00 42%,transparent 72%);
+            transform:translate(-50%,-50%) rotate(25deg);filter:blur(1px);
+        }
+        .rocket-crash-fireball:after { transform:translate(-50%,-50%) rotate(-55deg) scale(.7); }
+        .rocket-crash-smoke {
+            position:absolute;left:0;top:0;width:70px;height:70px;border-radius:50%;
+            background:radial-gradient(circle,rgba(55,60,70,.88) 0 28%,rgba(105,110,120,.7) 50%,rgba(80,85,95,.25) 65%,transparent 75%);
+            filter:blur(3px);transform:translate(-50%,-50%) scale(.2);
+            animation:crashSmoke 3s ease-out .35s forwards;
+        }
+        .rocket-crash-ring {
+            position:absolute;left:0;top:0;width:22px;height:22px;border:3px solid rgba(255,190,50,.9);
+            border-radius:50%;transform:translate(-50%,-50%) scale(0);animation:crashRing 1.4s ease-out forwards;
+        }
+        .rocket-crash-debris,.rocket-crash-spark {
+            position:absolute;left:0;top:0;display:block;transform:translate(-50%,-50%);
+            animation:crashDebris 2.8s cubic-bezier(.18,.65,.25,1) var(--delay) forwards;
+        }
+        .rocket-crash-debris {
+            width:var(--size);height:var(--size);border-radius:2px;
+            background:#9da8b5;box-shadow:0 0 7px rgba(255,120,0,.8);
+        }
+        .rocket-crash-metal {
+            background:linear-gradient(135deg,#f2f5f8 0 28%,#667384 29% 60%,#ff9d1c 61% 100%);
+        }
+        .rocket-crash-spark {
+            width:3px;height:10px;border-radius:50%;background:#ffd166;box-shadow:0 0 9px #fff;
+            animation-duration:1.15s;
+        }
+        @keyframes crashFlash {
+            0%{transform:translate(-50%,-50%) scale(.05);opacity:0}
+            12%{transform:translate(-50%,-50%) scale(5);opacity:1}
+            35%{transform:translate(-50%,-50%) scale(2.5);opacity:.7}
+            100%{transform:translate(-50%,-50%) scale(.2);opacity:0}
+        }
+        @keyframes crashFire {
+            0%{transform:translate(-50%,-50%) scale(.05);opacity:0}
+            12%{transform:translate(-50%,-50%) scale(2.2);opacity:1}
+            32%{transform:translate(-50%,-50%) scale(1.5);opacity:.95}
+            100%{transform:translate(-50%,-50%) scale(.35);opacity:0}
+        }
+        @keyframes crashSmoke {
+            0%{transform:translate(-50%,-50%) scale(.2);opacity:0}
+            20%{transform:translate(-50%,-65%) scale(1.2);opacity:.85}
+            55%{transform:translate(-25%,-120%) scale(2.8);opacity:.65}
+            100%{transform:translate(30%,-220%) scale(5.5);opacity:0}
+        }
+        @keyframes crashRing {
+            0%{transform:translate(-50%,-50%) scale(0);opacity:.9}
+            100%{transform:translate(-50%,-50%) scale(16);opacity:0}
+        }
+        @keyframes crashDebris {
+            0%{transform:translate(-50%,-50%) rotate(0) scale(1);opacity:1}
+            12%{opacity:1}
+            100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--rotation)) scale(.15);opacity:0}
+        }
+
+        @keyframes rocketCrashFlash {
+            0%{transform:translate(-50%,-50%) scale(.1);opacity:0}
+            15%{transform:translate(-50%,-50%) scale(4);opacity:1}
+            100%{transform:translate(-50%,-50%) scale(.5);opacity:0}
+        }
+        @keyframes rocketFireball {
+            0%{transform:translate(-50%,-50%) scale(.1);opacity:.2}
+            18%{transform:translate(-50%,-50%) scale(2.5);opacity:1}
+            55%{transform:translate(-50%,-50%) scale(1.4);opacity:.85}
+            100%{transform:translate(-50%,-50%) scale(.2);opacity:0}
+        }
+        @keyframes rocketSmoke {
+            0%{transform:translate(-50%,-50%) scale(.2);opacity:.8}
+            35%{transform:translate(-20%,-70%) scale(1.8);opacity:.7}
+            100%{transform:translate(30%,-180%) scale(5);opacity:0}
+        }
+        @keyframes rocketCrashRing {
+            0%{transform:translate(-50%,-50%) scale(0);opacity:1}
+            100%{transform:translate(-50%,-50%) scale(14);opacity:0}
+        }
+        @keyframes rocketDebris {
+            0%{transform:translate(-50%,-50%) rotate(0deg) scale(1);opacity:1}
+            45%{opacity:1}
+            100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--rotation)) scale(.2);opacity:0}
+        }
+
+
