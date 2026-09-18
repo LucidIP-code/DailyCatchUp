@@ -553,73 +553,73 @@
         }
 
 
-        /* Real-time rocket crash effect */
+        /* Real-time rocket crash effect: always above the application UI */
         .rocket-crash {
             position: fixed;
             width: 1px;
             height: 1px;
             pointer-events: none;
-            z-index: 20;
+            z-index: 2147483647;
         }
         .rocket-crash-flash {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 22px;
-            height: 22px;
-            transform: translate(-50%, -50%) scale(0);
-            border-radius: 50%;
+            position: absolute; left: 0; top: 0; width: 28px; height: 28px;
+            transform: translate(-50%, -50%) scale(0); border-radius: 50%;
             background: #fff;
-            box-shadow:
-                0 0 12px 6px #ffd700,
-                0 0 30px 14px #ff7a00,
-                0 0 55px 24px rgba(244,63,94,0.65);
-            animation: rocketCrashFlash 0.28s ease-out forwards;
+            box-shadow: 0 0 14px 7px #ffd700, 0 0 34px 16px #ff7a00, 0 0 65px 28px rgba(244,63,94,.7);
+            animation: rocketCrashFlash .32s ease-out forwards;
+        }
+        .rocket-crash-fireball {
+            position: absolute; left: 0; top: 0; width: 42px; height: 42px;
+            transform: translate(-50%, -50%) scale(.15); border-radius: 50%;
+            background: radial-gradient(circle, #fff 0 12%, #ffd166 25%, #ff7a00 52%, #f43f5e 72%, transparent 73%);
+            filter: blur(.3px);
+            animation: rocketFireball .7s ease-out forwards;
+        }
+        .rocket-crash-smoke {
+            position: absolute; left: 0; top: 0; width: 34px; height: 34px;
+            transform: translate(-50%, -50%) scale(.2); border-radius: 50%;
+            background: radial-gradient(circle, rgba(210,220,230,.7), rgba(90,100,115,.45) 48%, transparent 72%);
+            filter: blur(2px);
+            animation: rocketSmoke 1.35s ease-out .12s forwards;
         }
         .rocket-crash-ring {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 18px;
-            height: 18px;
-            border: 3px solid #ffd700;
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-            animation: rocketCrashRing 0.65s ease-out 0.04s forwards;
+            position: absolute; left: 0; top: 0; width: 18px; height: 18px;
+            border: 3px solid #ffd700; border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0); opacity: 0;
+            animation: rocketCrashRing .72s ease-out .04s forwards;
         }
-        .rocket-crash-debris,
-        .rocket-crash-spark {
-            position: absolute;
-            left: 0;
-            top: 0;
-            display: block;
-            width: var(--size);
-            height: var(--size);
+        .rocket-crash-debris, .rocket-crash-spark {
+            position: absolute; left: 0; top: 0; display: block;
             transform: translate(-50%, -50%);
-            animation: rocketDebris 0.9s cubic-bezier(0.15, 0.8, 0.25, 1) var(--delay) forwards;
+            animation: rocketDebris 1.05s cubic-bezier(.12,.75,.2,1) var(--delay) forwards;
         }
         .rocket-crash-debris {
-            background: #f43f5e;
-            box-shadow: 0 0 5px #ff7a00;
+            width: var(--size); height: var(--size);
+            background: #f43f5e; box-shadow: 0 0 6px #ff7a00;
         }
         .rocket-crash-spark {
-            width: 3px;
-            height: 3px;
-            background: #ffd700;
-            box-shadow: 0 0 7px #fff;
-            animation-duration: 0.6s;
+            width: 3px; height: 9px; background: #ffd700; box-shadow: 0 0 8px #fff;
+            animation-duration: .72s;
         }
         @keyframes rocketCrashFlash {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            25% { transform: translate(-50%, -50%) scale(2.8); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+            0% { transform: translate(-50%,-50%) scale(0); opacity:0; }
+            18% { transform: translate(-50%,-50%) scale(3.5); opacity:1; }
+            100% { transform: translate(-50%,-50%) scale(.25); opacity:0; }
+        }
+        @keyframes rocketFireball {
+            0% { transform: translate(-50%,-50%) scale(.15); opacity:.2; }
+            20% { transform: translate(-50%,-50%) scale(1.9); opacity:1; }
+            100% { transform: translate(-50%,-50%) scale(.55); opacity:0; }
+        }
+        @keyframes rocketSmoke {
+            0% { transform: translate(-50%,-50%) scale(.2); opacity:.7; }
+            100% { transform: translate(-50%,-70%) scale(4); opacity:0; }
         }
         @keyframes rocketCrashRing {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0.9; }
-            100% { transform: translate(-50%, -50%) scale(9); opacity: 0; }
+            0% { transform: translate(-50%,-50%) scale(0); opacity:.9; }
+            100% { transform: translate(-50%,-50%) scale(10); opacity:0; }
         }
         @keyframes rocketDebris {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.15); opacity: 0; }
+            0% { transform: translate(-50%,-50%) rotate(0deg) scale(1); opacity:1; }
+            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rotation)) scale(.1); opacity:0; }
         }
