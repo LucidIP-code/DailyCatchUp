@@ -617,7 +617,7 @@
         container.style.opacity = '1';
 
         // Deliberately vary speed so collisions can happen at different rates.
-        const duration = Math.random() * 18000 + 27000;
+        const duration = Math.random() * 30000 + 50000;
         const anim = container.animate([
             { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
             { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
@@ -756,7 +756,7 @@
             const targetX = window.innerWidth * (0.12 + Math.random() * 0.76);
             const targetY = window.innerHeight * (0.12 + Math.random() * 0.76);
             // Slower, cinematic approach so the collision is easy to see.
-            const collisionDuration = 6500 + Math.random() * 2500;
+            const collisionDuration = 10000 + Math.random() * 5000;
 
             launchRocketIntoCollision(first, targetX, targetY, true, collisionDuration);
             launchRocketIntoCollision(second, targetX, targetY, false, collisionDuration);
@@ -824,16 +824,12 @@
     function createRocketCrash(x, y) {
         const crash = document.createElement('div');
         crash.className = 'rocket-crash';
-        crash.style.left = `${x}px`;
-        crash.style.top = `${y}px`;
+        crash.style.left = x + 'px';
+        crash.style.top = y + 'px';
 
         const flash = document.createElement('div');
         flash.className = 'rocket-crash-flash';
         crash.appendChild(flash);
-
-        const ring = document.createElement('div');
-        ring.className = 'rocket-crash-ring';
-        crash.appendChild(ring);
 
         const fireball = document.createElement('div');
         fireball.className = 'rocket-crash-fireball';
@@ -843,34 +839,32 @@
         smoke.className = 'rocket-crash-smoke';
         crash.appendChild(smoke);
 
-        // Larger irregular fragments make the impact read as a rocket breaking
-        // apart rather than a generic particle effect.
-        for (let i = 0; i < 26; i++) {
+        for (let i = 0; i < 30; i++) {
             const debris = document.createElement('span');
             debris.className = i % 3 === 0 ? 'rocket-crash-debris rocket-crash-metal' : 'rocket-crash-debris';
-            const angle = (i / 22) * Math.PI * 2 + (Math.random() - 0.5) * 0.45;
-            const distance = 70 + Math.random() * 190;
-            debris.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
-            debris.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-            debris.style.setProperty('--delay', `${Math.random() * 110}ms`);
-            debris.style.setProperty('--size', `${3 + Math.random() * 7}px`);
-            debris.style.setProperty('--rotation', `${Math.random() * 720 - 360}deg`);
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 90 + Math.random() * 240;
+            debris.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+            debris.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+            debris.style.setProperty('--delay', Math.random() * 180 + 'ms');
+            debris.style.setProperty('--size', 4 + Math.random() * 8 + 'px');
+            debris.style.setProperty('--rotation', (Math.random() * 1080 - 540) + 'deg');
             crash.appendChild(debris);
         }
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 24; i++) {
             const spark = document.createElement('span');
             spark.className = 'rocket-crash-spark';
             const angle = Math.random() * Math.PI * 2;
-            const distance = 80 + Math.random() * 170;
-            spark.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
-            spark.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-            spark.style.setProperty('--delay', `${Math.random() * 130}ms`);
+            const distance = 100 + Math.random() * 210;
+            spark.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+            spark.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+            spark.style.setProperty('--delay', Math.random() * 120 + 'ms');
             crash.appendChild(spark);
         }
 
         document.body.appendChild(crash);
-        setTimeout(() => crash.remove(), 1500);
+        setTimeout(() => crash.remove(), 2400);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
