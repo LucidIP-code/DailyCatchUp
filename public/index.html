@@ -617,7 +617,7 @@
         container.style.opacity = '1';
 
         // Deliberately vary speed so collisions can happen at different rates.
-        const duration = Math.random() * 20000 + 15000;
+        const duration = Math.random() * 18000 + 27000;
         const anim = container.animate([
             { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
             { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
@@ -753,9 +753,10 @@
 
             const first = active[0];
             const second = active[1];
-            const targetX = window.innerWidth * (0.30 + Math.random() * 0.40);
-            const targetY = window.innerHeight * (0.25 + Math.random() * 0.45);
-            const collisionDuration = 2600;
+            const targetX = window.innerWidth * (0.12 + Math.random() * 0.76);
+            const targetY = window.innerHeight * (0.12 + Math.random() * 0.76);
+            // Slower, cinematic approach so the collision is easy to see.
+            const collisionDuration = 6500 + Math.random() * 2500;
 
             launchRocketIntoCollision(first, targetX, targetY, true, collisionDuration);
             launchRocketIntoCollision(second, targetX, targetY, false, collisionDuration);
@@ -789,7 +790,7 @@
         // The normal rocket system uses translate() from (0,0). Keep the same
         // coordinate system here. Both rockets' visible centers finish at the
         // exact same screen coordinate.
-        const startX = first ? -400 : window.innerWidth + 150;
+        const startX = first ? -400 : window.innerWidth + 400;
         const startY = targetY - 125;
         const endX = targetX - 125;
         const endY = targetY - 125;
@@ -844,11 +845,11 @@
 
         // Larger irregular fragments make the impact read as a rocket breaking
         // apart rather than a generic particle effect.
-        for (let i = 0; i < 22; i++) {
+        for (let i = 0; i < 26; i++) {
             const debris = document.createElement('span');
-            debris.className = 'rocket-crash-debris';
+            debris.className = i % 3 === 0 ? 'rocket-crash-debris rocket-crash-metal' : 'rocket-crash-debris';
             const angle = (i / 22) * Math.PI * 2 + (Math.random() - 0.5) * 0.45;
-            const distance = 55 + Math.random() * 150;
+            const distance = 70 + Math.random() * 190;
             debris.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
             debris.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
             debris.style.setProperty('--delay', `${Math.random() * 110}ms`);
@@ -857,11 +858,11 @@
             crash.appendChild(debris);
         }
 
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 20; i++) {
             const spark = document.createElement('span');
             spark.className = 'rocket-crash-spark';
             const angle = Math.random() * Math.PI * 2;
-            const distance = 70 + Math.random() * 135;
+            const distance = 80 + Math.random() * 170;
             spark.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
             spark.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
             spark.style.setProperty('--delay', `${Math.random() * 130}ms`);
