@@ -609,14 +609,14 @@
         const dx = endX - startX;
         const dy = endY - startY;
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        mini.style.transform = \`rotate(\${angle + 90}deg)\`;
+        mini.style.transform = `rotate(${angle + 90}deg)`;
         container.style.opacity = '1';
 
         // Deliberately vary speed so collisions can happen at different rates.
         const duration = Math.random() * 20000 + 15000;
         const anim = container.animate([
-            { transform: \`translate(\${startX}px, \${startY}px)\`, opacity: 1 },
-            { transform: \`translate(\${endX}px, \${endY}px)\`, opacity: 1 }
+            { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
+            { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
         ], {
             duration,
             easing: 'linear',
@@ -713,8 +713,8 @@
     function createRocketCrash(x, y) {
         const crash = document.createElement('div');
         crash.className = 'rocket-crash';
-        crash.style.left = \`\${x}px\`;
-        crash.style.top = \`\${y}px\`;
+        crash.style.left = `${x}px`;
+        crash.style.top = `${y}px`;
 
         const flash = document.createElement('div');
         flash.className = 'rocket-crash-flash';
@@ -731,10 +731,10 @@
             debris.className = 'rocket-crash-debris';
             const angle = (i / 18) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
             const distance = 45 + Math.random() * 95;
-            debris.style.setProperty('--dx', \`\${Math.cos(angle) * distance}px\`);
-            debris.style.setProperty('--dy', \`\${Math.sin(angle) * distance}px\`);
-            debris.style.setProperty('--delay', \`\${Math.random() * 70}ms\`);
-            debris.style.setProperty('--size', \`\${3 + Math.random() * 5}px\`);
+            debris.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+            debris.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
+            debris.style.setProperty('--delay', `${Math.random() * 70}ms`);
+            debris.style.setProperty('--size', `${3 + Math.random() * 5}px`);
             crash.appendChild(debris);
         }
 
@@ -743,9 +743,9 @@
             spark.className = 'rocket-crash-spark';
             const angle = Math.random() * Math.PI * 2;
             const distance = 55 + Math.random() * 80;
-            spark.style.setProperty('--dx', \`\${Math.cos(angle) * distance}px\`);
-            spark.style.setProperty('--dy', \`\${Math.sin(angle) * distance}px\`);
-            spark.style.setProperty('--delay', \`\${Math.random() * 100}ms\`);
+            spark.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+            spark.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
+            spark.style.setProperty('--delay', `${Math.random() * 100}ms`);
             crash.appendChild(spark);
         }
 
