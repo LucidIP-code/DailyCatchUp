@@ -733,6 +733,7 @@
 
     function scheduleForcedCollision() {
         if (forcedCollisionPending || forcedCollisionActive) return;
+
         forcedCollisionPending = true;
 
         const attempt = () => {
@@ -743,7 +744,7 @@
             });
 
             if (active.length < 2) {
-                forcedCollisionTimer = setTimeout(attempt, 500);
+                forcedCollisionTimer = setTimeout(attempt, 300);
                 return;
             }
 
@@ -752,26 +753,43 @@
 
             const first = active[0];
             const second = active[1];
-            const targetX = window.innerWidth * (0.25 + Math.random() * 0.50);
-            const targetY = window.innerHeight * (0.20 + Math.random() * 0.55);
+            const targetX = window.innerWidth * (0.30 + Math.random() * 0.40);
+            const targetY = window.innerHeight * (0.25 + Math.random() * 0.45);
+            const collisionDuration = 2600;
 
-            launchRocketIntoCollision(first, targetX, targetY, true);
-            launchRocketIntoCollision(second, targetX, targetY, false);
+            launchRocketIntoCollision(first, targetX, targetY, true, collisionDuration);
+            launchRocketIntoCollision(second, targetX, targetY, false, collisionDuration);
+
+            // Do not depend on a frame landing exactly on the hitbox. The two
+            // rockets are deliberately animated to the same pixel, so at this
+            // moment they are guaranteed to occupy the same point. Trigger the
+            // normal crash routine at that exact physical meeting time.
+            forcedCollisionTimer = setTimeout(() => {
+                forcedCollisionTimer = null;
+
+                const aState = rocketStates.get(first);
+                const bState = rocketStates.get(second);
+                if (aState && bState && !aState.busy && !bState.busy) {
+                    triggerRocketCollision(first, second);
+                } else {
+                    forcedCollisionActive = false;
+                }
+            }, collisionDuration - 20);
         };
 
         attempt();
     }
 
-    function launchRocketIntoCollision(container, targetX, targetY, first) {
+    function launchRocketIntoCollision(container, targetX, targetY, first, duration) {
         const state = rocketStates.get(container);
         if (!state || state.busy) return;
 
         if (state.animation) state.animation.cancel();
 
-        // Use absolute left/top coordinates for the controlled collision.
-        // This avoids mixing screen coordinates with CSS transform coordinates.
-        // Both rockets therefore have a guaranteed common world-space target.
-        const startX = first ? -280 : window.innerWidth + 30;
+        // The normal rocket system uses translate() from (0,0). Keep the same
+        // coordinate system here. Both rockets' visible centers finish at the
+        // exact same screen coordinate.
+        const startX = first ? -400 : window.innerWidth + 150;
         const startY = targetY - 125;
         const endX = targetX - 125;
         const endY = targetY - 125;
@@ -780,17 +798,13 @@
         const angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
         mini.style.transform = `rotate(${angle + 90}deg)`;
 
-        container.style.position = 'fixed';
-        container.style.left = `${startX}px`;
-        container.style.top = `${startY}px`;
-        container.style.transform = 'none';
         container.style.opacity = '1';
 
         const anim = container.animate([
-            { left: `${startX}px`, top: `${startY}px`, opacity: 1 },
-            { left: `${endX}px`, top: `${endY}px`, opacity: 1 }
+            { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
+            { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
         ], {
-            duration: 2600,
+            duration,
             easing: 'linear',
             fill: 'forwards'
         });
@@ -799,13 +813,10 @@
 
         anim.onfinish = () => {
             if (state.busy) return;
-            state.animation = null;
-            container.style.opacity = '0';
-            container.style.left = '0px';
-            container.style.top = '0px';
-            container.style.transform = 'none';
-            forcedCollisionActive = false;
-            setTimeout(() => flyRandomRocket(container), 1000);
+            // The collision timer normally fires just before this callback.
+            // If it doesn't, keep the rockets at the meeting point rather
+            // than letting either rocket silently disappear.
+            state.animation = anim;
         };
     }
 
