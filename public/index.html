@@ -686,13 +686,17 @@
         const secondState = rocketStates.get(second);
         if (!firstState || !secondState || firstState.busy || secondState.busy) return;
 
+        // Capture the real impact position BEFORE cancelling WAAPI animations.
+        // Cancelling first would snap the rockets back to their original
+        // transform and could make the explosion appear at the wrong place.
+        const a = first.querySelector('.bg-rocket-mini').getBoundingClientRect();
+        const b = second.querySelector('.bg-rocket-mini').getBoundingClientRect();
+
         firstState.busy = true;
         secondState.busy = true;
         if (firstState.animation) firstState.animation.cancel();
         if (secondState.animation) secondState.animation.cancel();
-
-        const a = first.querySelector('.bg-rocket-mini').getBoundingClientRect();
-        const b = second.querySelector('.bg-rocket-mini').getBoundingClientRect();
+        forcedCollisionActive = false;
         const impactX = (Math.max(a.left, b.left) + Math.min(a.right, b.right)) / 2;
         const impactY = (Math.max(a.top, b.top) + Math.min(a.bottom, b.bottom)) / 2;
 
@@ -745,10 +749,6 @@
 
             const first = active[0];
             const second = active[1];
-
-            // Put both rockets on opposite sides of a random point and give
-            // them the exact same destination/time. This guarantees that the
-            // two moving rockets physically overlap in mid-air.
             const targetX = window.innerWidth * (0.25 + Math.random() * 0.50);
             const targetY = window.innerHeight * (0.20 + Math.random() * 0.55);
 
@@ -762,37 +762,45 @@
     function launchRocketIntoCollision(container, targetX, targetY, first) {
         const state = rocketStates.get(container);
         if (!state || state.busy) return;
+
         if (state.animation) state.animation.cancel();
 
-        const mini = container.querySelector('.bg-rocket-mini');
-        const startX = first ? -350 : window.innerWidth + 350;
-        const startY = targetY;
-        const endX = targetX;
-        const endY = targetY;
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        // Use absolute left/top coordinates for the controlled collision.
+        // This avoids mixing screen coordinates with CSS transform coordinates.
+        // Both rockets therefore have a guaranteed common world-space target.
+        const startX = first ? -280 : window.innerWidth + 30;
+        const startY = targetY - 125;
+        const endX = targetX - 125;
+        const endY = targetY - 125;
 
+        const mini = container.querySelector('.bg-rocket-mini');
+        const angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
         mini.style.transform = `rotate(${angle + 90}deg)`;
+
+        container.style.position = 'fixed';
+        container.style.left = `${startX}px`;
+        container.style.top = `${startY}px`;
+        container.style.transform = 'none';
         container.style.opacity = '1';
 
-        // Same duration means both rockets reach the exact same point
-        // together. The normal collision detector then handles the crash.
-        const duration = 2600;
         const anim = container.animate([
-            { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
-            { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
+            { left: `${startX}px`, top: `${startY}px`, opacity: 1 },
+            { left: `${endX}px`, top: `${endY}px`, opacity: 1 }
         ], {
-            duration,
+            duration: 2600,
             easing: 'linear',
             fill: 'forwards'
         });
+
         state.animation = anim;
 
         anim.onfinish = () => {
             if (state.busy) return;
             state.animation = null;
             container.style.opacity = '0';
+            container.style.left = '0px';
+            container.style.top = '0px';
+            container.style.transform = 'none';
             forcedCollisionActive = false;
             setTimeout(() => flyRandomRocket(container), 1000);
         };
