@@ -551,3 +551,75 @@
             0% { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(1); opacity: 1; }
             100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-100px) scale(0); opacity: 0; }
         }
+
+
+        /* Real-time rocket crash effect */
+        .rocket-crash {
+            position: fixed;
+            width: 1px;
+            height: 1px;
+            pointer-events: none;
+            z-index: 20;
+        }
+        .rocket-crash-flash {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 22px;
+            height: 22px;
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+            background: #fff;
+            box-shadow:
+                0 0 12px 6px #ffd700,
+                0 0 30px 14px #ff7a00,
+                0 0 55px 24px rgba(244,63,94,0.65);
+            animation: rocketCrashFlash 0.28s ease-out forwards;
+        }
+        .rocket-crash-ring {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 18px;
+            height: 18px;
+            border: 3px solid #ffd700;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            animation: rocketCrashRing 0.65s ease-out 0.04s forwards;
+        }
+        .rocket-crash-debris,
+        .rocket-crash-spark {
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: block;
+            width: var(--size);
+            height: var(--size);
+            transform: translate(-50%, -50%);
+            animation: rocketDebris 0.9s cubic-bezier(0.15, 0.8, 0.25, 1) var(--delay) forwards;
+        }
+        .rocket-crash-debris {
+            background: #f43f5e;
+            box-shadow: 0 0 5px #ff7a00;
+        }
+        .rocket-crash-spark {
+            width: 3px;
+            height: 3px;
+            background: #ffd700;
+            box-shadow: 0 0 7px #fff;
+            animation-duration: 0.6s;
+        }
+        @keyframes rocketCrashFlash {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            25% { transform: translate(-50%, -50%) scale(2.8); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+        }
+        @keyframes rocketCrashRing {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(9); opacity: 0; }
+        }
+        @keyframes rocketDebris {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.15); opacity: 0; }
+        }
