@@ -563,6 +563,9 @@
     // detected from their live screen positions rather than their planned paths.
     const rocketStates = new WeakMap();
     let rocketCollisionFrame = null;
+    let rocketRespawnCount = 0;
+    let forcedCollisionPending = false;
+    let forcedCollisionTimer = null;
 
     function initRandomRockets() {
         const rockets = document.querySelectorAll('.bg-rocket-container');
@@ -707,7 +710,89 @@
         state.busy = false;
         state.animation = null;
         container.style.opacity = '0';
-        setTimeout(() => flyRandomRocket(container), Math.random() * 3500 + 1000);
+        rocketRespawnCount++;
+        setTimeout(() => {
+            flyRandomRocket(container);
+            // Every 3rd respawn, arrange a genuine mid-air collision.
+            // The collision detector still triggers the actual crash effect,
+            // so this is not an artificial explosion.
+            if (rocketRespawnCount % 3 === 0) {
+                scheduleForcedCollision();
+            }
+        }, Math.random() * 3500 + 1000);
+    }
+
+    function scheduleForcedCollision() {
+        if (forcedCollisionPending || forcedCollisionTimer) return;
+        forcedCollisionPending = true;
+
+        forcedCollisionTimer = setTimeout(() => {
+            forcedCollisionTimer = null;
+            const rockets = Array.from(document.querySelectorAll('.bg-rocket-container'));
+            const active = rockets.filter(r => {
+                const state = rocketStates.get(r);
+                return state && !state.busy && state.animation;
+            });
+
+            if (active.length < 2) {
+                forcedCollisionPending = false;
+                // Try again shortly when both rockets are active.
+                setTimeout(scheduleForcedCollision, 1200);
+                return;
+            }
+
+            const first = active[0];
+            const second = active[1];
+            const a = first.querySelector('.bg-rocket-mini').getBoundingClientRect();
+            const b = second.querySelector('.bg-rocket-mini').getBoundingClientRect();
+
+            // Pick a point between the two rockets, biased toward the centre
+            // of the viewport, then send both rockets toward it from opposite
+            // directions. They will physically overlap and the normal detector
+            // will produce the crash.
+            const targetX = window.innerWidth * (0.35 + Math.random() * 0.30);
+            const targetY = window.innerHeight * (0.30 + Math.random() * 0.40);
+            launchRocketIntoCollision(first, targetX, targetY, true);
+            launchRocketIntoCollision(second, targetX, targetY, false);
+            forcedCollisionPending = false;
+        }, 900);
+    }
+
+    function launchRocketIntoCollision(container, targetX, targetY, first) {
+        const state = rocketStates.get(container);
+        if (!state || state.busy) return;
+        if (state.animation) state.animation.cancel();
+
+        const mini = container.querySelector('.bg-rocket-mini');
+        const rect = mini.getBoundingClientRect();
+        const startX = first ? -180 : window.innerWidth + 180;
+        const startY = targetY + (Math.random() - 0.5) * 120;
+        const endX = first ? targetX : targetX;
+        const endY = targetY + (Math.random() - 0.5) * 50;
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+        mini.style.transform = `rotate(${angle + 90}deg)`;
+        container.style.opacity = '1';
+
+        const duration = 1800 + Math.random() * 700;
+        const anim = container.animate([
+            { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
+            { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
+        ], {
+            duration,
+            easing: 'linear',
+            fill: 'forwards'
+        });
+        state.animation = anim;
+
+        anim.onfinish = () => {
+            if (state.busy) return;
+            state.animation = null;
+            container.style.opacity = '0';
+            setTimeout(() => flyRandomRocket(container), 1000);
+        };
     }
 
     function createRocketCrash(x, y) {
