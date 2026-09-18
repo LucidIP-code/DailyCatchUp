@@ -656,7 +656,7 @@
                     if (!secondState || secondState.busy || !secondState.animation) continue;
 
                     if (rocketsHaveCollided(first, second)) {
-                        triggerRocketCollision(first, second);
+                        triggerRocketCollision(first, second, impactX, impactY);
                         break;
                     }
                 }
@@ -700,12 +700,19 @@
         if (firstState.animation) firstState.animation.cancel();
         if (secondState.animation) secondState.animation.cancel();
         forcedCollisionActive = false;
-        const impactX = (Math.max(a.left, b.left) + Math.min(a.right, b.right)) / 2;
-        const impactY = (Math.max(a.top, b.top) + Math.min(a.bottom, b.bottom)) / 2;
+
+        // Forced collisions supply the exact nose-to-nose contact point.
+        // For ordinary collisions, fall back to the overlap midpoint.
+        const crashX = Number.isFinite(impactX)
+            ? impactX
+            : (Math.max(a.left, b.left) + Math.min(a.right, b.right)) / 2;
+        const crashY = Number.isFinite(impactY)
+            ? impactY
+            : (Math.max(a.top, b.top) + Math.min(a.bottom, b.bottom)) / 2;
 
         first.style.opacity = '0';
         second.style.opacity = '0';
-        createRocketCrash(impactX, impactY);
+        createRocketCrash(crashX, crashY);
 
         setTimeout(() => respawnRocketAfterCrash(first), 1200);
         setTimeout(() => respawnRocketAfterCrash(second), 1200);
@@ -787,18 +794,31 @@
         mini.style.height = '150px';
         mini.style.transformOrigin = '50% 50%';
 
-        // The rocket image points upward by default. For the controlled
-        // collision, first travels right and second travels left. Position
-        // the CENTER so the NOSE (75px from center) reaches the impact point.
+        // The rocket image points upward by default. Pick a random
+        // incoming direction, then send the second rocket from the exact
+        // opposite direction. This gives a true nose-to-nose impact.
         const noseOffset = 75;
-        const startX = first ? -400 : window.innerWidth + 400;
-        const startY = impactY - noseOffset;
-        const endX = first ? impactX - noseOffset : impactX + noseOffset;
-        const endY = impactY - noseOffset;
+        const approachAngle = Math.random() * Math.PI * 2;
+        const ux = Math.cos(approachAngle);
+        const uy = Math.sin(approachAngle);
+        const direction = first ? 1 : -1;
+        const travelX = ux * direction;
+        const travelY = uy * direction;
+        const startDistance = Math.max(window.innerWidth, window.innerHeight) + 800;
 
-        // Face the direction of travel.
-        const angle = first ? 90 : -90;
-        mini.style.transform = 'rotate(' + angle + 'deg)';
+        const startCenterX = impactX - travelX * startDistance;
+        const startCenterY = impactY - travelY * startDistance;
+        const endCenterX = impactX - travelX * noseOffset;
+        const endCenterY = impactY - travelY * noseOffset;
+
+        const startX = startCenterX - 75;
+        const startY = startCenterY - 75;
+        const endX = endCenterX - 75;
+        const endY = endCenterY - 75;
+
+        // Face exactly along the direction of travel.
+        const angle = Math.atan2(travelY, travelX) * 180 / Math.PI;
+        mini.style.transform = 'rotate(' + (angle + 90) + 'deg)';
 
         container.style.opacity = '1';
 
