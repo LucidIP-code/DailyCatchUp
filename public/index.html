@@ -827,44 +827,40 @@
         crash.style.left = x + 'px';
         crash.style.top = y + 'px';
 
-        const flash = document.createElement('div');
-        flash.className = 'rocket-crash-flash';
-        crash.appendChild(flash);
+        // Layered impact: white-hot flash, expanding fireball, flame tongues,
+        // smoke, and many heavy fragments with individual ballistic paths.
+        ['rocket-crash-flash','rocket-crash-fireball','rocket-crash-smoke','rocket-crash-ring'].forEach(cls => {
+            const el = document.createElement('div');
+            el.className = cls;
+            crash.appendChild(el);
+        });
 
-        const fireball = document.createElement('div');
-        fireball.className = 'rocket-crash-fireball';
-        crash.appendChild(fireball);
-
-        const smoke = document.createElement('div');
-        smoke.className = 'rocket-crash-smoke';
-        crash.appendChild(smoke);
-
-        for (let i = 0; i < 30; i++) {
-            const debris = document.createElement('span');
-            debris.className = i % 3 === 0 ? 'rocket-crash-debris rocket-crash-metal' : 'rocket-crash-debris';
+        for (let i = 0; i < 34; i++) {
+            const d = document.createElement('span');
+            d.className = i % 2 ? 'rocket-crash-debris' : 'rocket-crash-debris rocket-crash-metal';
             const angle = Math.random() * Math.PI * 2;
-            const distance = 90 + Math.random() * 240;
-            debris.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
-            debris.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
-            debris.style.setProperty('--delay', Math.random() * 180 + 'ms');
-            debris.style.setProperty('--size', 4 + Math.random() * 8 + 'px');
-            debris.style.setProperty('--rotation', (Math.random() * 1080 - 540) + 'deg');
-            crash.appendChild(debris);
+            const distance = 80 + Math.random() * 280;
+            d.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+            d.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+            d.style.setProperty('--delay', Math.random() * .18 + 's');
+            d.style.setProperty('--size', 4 + Math.random() * 9 + 'px');
+            d.style.setProperty('--rotation', (Math.random() * 1440 - 720) + 'deg');
+            crash.appendChild(d);
         }
 
-        for (let i = 0; i < 24; i++) {
-            const spark = document.createElement('span');
-            spark.className = 'rocket-crash-spark';
+        for (let i = 0; i < 28; i++) {
+            const s = document.createElement('span');
+            s.className = 'rocket-crash-spark';
             const angle = Math.random() * Math.PI * 2;
-            const distance = 100 + Math.random() * 210;
-            spark.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
-            spark.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
-            spark.style.setProperty('--delay', Math.random() * 120 + 'ms');
-            crash.appendChild(spark);
+            const distance = 90 + Math.random() * 230;
+            s.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+            s.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+            s.style.setProperty('--delay', Math.random() * .12 + 's');
+            crash.appendChild(s);
         }
 
         document.body.appendChild(crash);
-        setTimeout(() => crash.remove(), 2400);
+        setTimeout(() => crash.remove(), 3300);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
