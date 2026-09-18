@@ -613,11 +613,14 @@
         const dx = endX - startX;
         const dy = endY - startY;
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        mini.style.width = '150px';
+        mini.style.height = '150px';
+        mini.style.transformOrigin = '50% 50%';
         mini.style.transform = `rotate(${angle + 90}deg)`;
         container.style.opacity = '1';
 
         // Deliberately vary speed so collisions can happen at different rates.
-        const duration = Math.random() * 30000 + 50000;
+        const duration = Math.random() * 20000 + 40000;
         const anim = container.animate([
             { transform: `translate(${startX}px, ${startY}px)`, opacity: 1 },
             { transform: `translate(${endX}px, ${endY}px)`, opacity: 1 }
@@ -756,7 +759,7 @@
             const targetX = window.innerWidth * (0.12 + Math.random() * 0.76);
             const targetY = window.innerHeight * (0.12 + Math.random() * 0.76);
             // Slower, cinematic approach so the collision is easy to see.
-            const collisionDuration = 10000 + Math.random() * 5000;
+            const collisionDuration = 14000 + Math.random() * 7000;
 
             launchRocketIntoCollision(first, targetX, targetY, true, collisionDuration);
             launchRocketIntoCollision(second, targetX, targetY, false, collisionDuration);
@@ -791,9 +794,10 @@
         // coordinate system here. Both rockets' visible centers finish at the
         // exact same screen coordinate.
         const startX = first ? -400 : window.innerWidth + 400;
-        const startY = targetY - 125;
-        const endX = targetX - 125;
-        const endY = targetY - 125;
+        const rocketHalf = 75;
+        const startY = targetY - rocketHalf;
+        const endX = targetX - rocketHalf;
+        const endY = targetY - rocketHalf;
 
         const mini = container.querySelector('.bg-rocket-mini');
         const angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
