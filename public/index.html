@@ -684,25 +684,26 @@
         return Math.hypot(ax - bx, ay - by) <= hitRadius * 2;
     }
 
-    function triggerRocketCollision(first, second) {
+    function triggerRocketCollision(first, second, impactX, impactY) {
         const firstState = rocketStates.get(first);
         const secondState = rocketStates.get(second);
         if (!firstState || !secondState || firstState.busy || secondState.busy) return;
 
-        // Capture the real impact position BEFORE cancelling WAAPI animations.
-        // Cancelling first would snap the rockets back to their original
-        // transform and could make the explosion appear at the wrong place.
+        // Read the final rendered positions before cancelling the animations.
         const a = first.querySelector('.bg-rocket-mini').getBoundingClientRect();
         const b = second.querySelector('.bg-rocket-mini').getBoundingClientRect();
 
         firstState.busy = true;
         secondState.busy = true;
+
         if (firstState.animation) firstState.animation.cancel();
         if (secondState.animation) secondState.animation.cancel();
-        forcedCollisionActive = false;
 
-        // Forced collisions supply the exact nose-to-nose contact point.
-        // For ordinary collisions, fall back to the overlap midpoint.
+        forcedCollisionActive = false;
+        forcedCollisionPending = false;
+
+        // Forced collision: use the exact calculated nose contact point.
+        // Normal collision: use the visible overlap area as a fallback.
         const crashX = Number.isFinite(impactX)
             ? impactX
             : (Math.max(a.left, b.left) + Math.min(a.right, b.right)) / 2;
@@ -712,6 +713,8 @@
 
         first.style.opacity = '0';
         second.style.opacity = '0';
+
+        // Start the visual explosion before scheduling the respawns.
         createRocketCrash(crashX, crashY);
 
         setTimeout(() => respawnRocketAfterCrash(first), 1200);
@@ -720,19 +723,21 @@
 
     function respawnRocketAfterCrash(container) {
         if (!container.isConnected) return;
+
         const state = rocketStates.get(container);
         if (!state) return;
+
         state.busy = false;
         state.animation = null;
         container.style.opacity = '0';
-        queueRocketRespawn(container, Math.random() * 3500 + 1000);
+
+        // Give the crashed rocket a fresh flight after the explosion.
+        setTimeout(() => flyRandomRocket(container), Math.random() * 3500 + 1000);
     }
 
     function queueRocketRespawn(container, delay) {
-        // Count every flight completion, not only crash completions.
         rocketRespawnCount++;
 
-        // On every third respawn, schedule one guaranteed physical collision.
         if (rocketRespawnCount >= 3 && !forcedCollisionPending && !forcedCollisionActive) {
             rocketRespawnCount = 0;
             scheduleForcedCollision();
@@ -763,47 +768,49 @@
             const first = active[0];
             const second = active[1];
 
-            // Pick a genuinely random impact point. The rockets approach this
-            // point from opposite sides, but stop with their NOSES touching.
             const impactX = window.innerWidth * (0.10 + Math.random() * 0.80);
             const impactY = window.innerHeight * (0.10 + Math.random() * 0.80);
             const collisionDuration = 14000 + Math.random() * 7000;
 
-            launchRocketIntoCollision(first, impactX, impactY, true, collisionDuration);
-            launchRocketIntoCollision(second, impactX, impactY, false, collisionDuration);
+            // One random approach direction, with the second rocket coming
+            // from exactly the opposite side.
+            const angle = Math.random() * Math.PI * 2;
+            const ux = Math.cos(angle);
+            const uy = Math.sin(angle);
 
-            // Both rockets use the same duration and their nose positions are
-            // calculated around the impact point. Trigger the crash only when
-            // the two noses have reached that point.
+            launchRocketIntoCollision(first, impactX, impactY, ux, uy, collisionDuration);
+            launchRocketIntoCollision(second, impactX, impactY, -ux, -uy, collisionDuration);
+
             forcedCollisionTimer = setTimeout(() => {
                 forcedCollisionTimer = null;
-                triggerRocketCollision(first, second);
-            }, collisionDuration);
+                triggerRocketCollision(first, second, impactX, impactY);
+            }, collisionDuration + 50);
         };
 
         attempt();
     }
 
-    function launchRocketIntoCollision(container, impactX, impactY, first, duration) {
+    function launchRocketIntoCollision(container, impactX, impactY, travelX, travelY, duration) {
         const state = rocketStates.get(container);
         if (!state || state.busy) return;
+
         if (state.animation) state.animation.cancel();
 
         const mini = container.querySelector('.bg-rocket-mini');
-        mini.style.width = '150px';
-        mini.style.height = '150px';
+        const rocketSize = 150;
+        const noseOffset = 75;
+
+        mini.style.width = rocketSize + 'px';
+        mini.style.height = rocketSize + 'px';
         mini.style.transformOrigin = '50% 50%';
 
-        // The rocket image points upward by default. Pick a random
-        // incoming direction, then send the second rocket from the exact
-        // opposite direction. This gives a true nose-to-nose impact.
-        const noseOffset = 75;
-        const approachAngle = Math.random() * Math.PI * 2;
-        const ux = Math.cos(approachAngle);
-        const uy = Math.sin(approachAngle);
-        const direction = first ? 1 : -1;
-        const travelX = ux * direction;
-        const travelY = uy * direction;
+        // The rocket graphic points upward by default. Rotate it so its nose
+        // points in the exact direction of travel.
+        const angle = Math.atan2(travelY, travelX) * 180 / Math.PI;
+        mini.style.transform = 'rotate(' + (angle + 90) + 'deg)';
+
+        // Position the rocket CENTERS on opposite sides of the impact point.
+        // Their noses therefore meet at impactX/impactY without body overlap.
         const startDistance = Math.max(window.innerWidth, window.innerHeight) + 800;
 
         const startCenterX = impactX - travelX * startDistance;
@@ -811,14 +818,10 @@
         const endCenterX = impactX - travelX * noseOffset;
         const endCenterY = impactY - travelY * noseOffset;
 
-        const startX = startCenterX - 75;
-        const startY = startCenterY - 75;
-        const endX = endCenterX - 75;
-        const endY = endCenterY - 75;
-
-        // Face exactly along the direction of travel.
-        const angle = Math.atan2(travelY, travelX) * 180 / Math.PI;
-        mini.style.transform = 'rotate(' + (angle + 90) + 'deg)';
+        const startX = startCenterX - rocketSize / 2;
+        const startY = startCenterY - rocketSize / 2;
+        const endX = endCenterX - rocketSize / 2;
+        const endY = endCenterY - rocketSize / 2;
 
         container.style.opacity = '1';
 
@@ -833,9 +836,9 @@
 
         state.animation = anim;
 
-        // Do not let the normal animation lifecycle respawn either rocket.
-        // They remain frozen at nose-to-nose contact until the crash routine
-        // removes them.
+        // Keep them at the contact position until triggerRocketCollision()
+        // runs. This prevents the normal flight lifecycle from respawning
+        // them before the crash effect has played.
         anim.onfinish = () => {
             if (!state.busy) state.animation = anim;
         };
