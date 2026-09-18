@@ -632,7 +632,7 @@
             if (state.busy) return;
             state.animation = null;
             container.style.opacity = '0';
-            setTimeout(() => flyRandomRocket(container), Math.random() * 5000 + 2000);
+            queueRocketRespawn(container, Math.random() * 5000 + 2000);
         };
     }
 
@@ -715,17 +715,20 @@
         state.busy = false;
         state.animation = null;
         container.style.opacity = '0';
+        queueRocketRespawn(container, Math.random() * 3500 + 1000);
+    }
+
+    function queueRocketRespawn(container, delay) {
+        // Count every flight completion, not only crash completions.
         rocketRespawnCount++;
 
-        // Count ALL completed rocket respawns globally. On the third one,
-        // request one controlled collision. Reset immediately so the next
-        // collision is exactly three respawns later.
+        // On every third respawn, schedule one guaranteed physical collision.
         if (rocketRespawnCount >= 3 && !forcedCollisionPending && !forcedCollisionActive) {
             rocketRespawnCount = 0;
             scheduleForcedCollision();
         }
 
-        setTimeout(() => flyRandomRocket(container), Math.random() * 3500 + 1000);
+        setTimeout(() => flyRandomRocket(container), delay);
     }
 
     function scheduleForcedCollision() {
