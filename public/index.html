@@ -809,33 +809,42 @@
         ring.className = 'rocket-crash-ring';
         crash.appendChild(ring);
 
-        // Multiple debris pieces travel in different directions to sell the
-        // feeling that both rockets actually broke apart at impact.
-        for (let i = 0; i < 18; i++) {
+        const fireball = document.createElement('div');
+        fireball.className = 'rocket-crash-fireball';
+        crash.appendChild(fireball);
+
+        const smoke = document.createElement('div');
+        smoke.className = 'rocket-crash-smoke';
+        crash.appendChild(smoke);
+
+        // Larger irregular fragments make the impact read as a rocket breaking
+        // apart rather than a generic particle effect.
+        for (let i = 0; i < 22; i++) {
             const debris = document.createElement('span');
             debris.className = 'rocket-crash-debris';
-            const angle = (i / 18) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-            const distance = 45 + Math.random() * 95;
+            const angle = (i / 22) * Math.PI * 2 + (Math.random() - 0.5) * 0.45;
+            const distance = 55 + Math.random() * 150;
             debris.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
             debris.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-            debris.style.setProperty('--delay', `${Math.random() * 70}ms`);
-            debris.style.setProperty('--size', `${3 + Math.random() * 5}px`);
+            debris.style.setProperty('--delay', `${Math.random() * 110}ms`);
+            debris.style.setProperty('--size', `${3 + Math.random() * 7}px`);
+            debris.style.setProperty('--rotation', `${Math.random() * 720 - 360}deg`);
             crash.appendChild(debris);
         }
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 16; i++) {
             const spark = document.createElement('span');
             spark.className = 'rocket-crash-spark';
             const angle = Math.random() * Math.PI * 2;
-            const distance = 55 + Math.random() * 80;
+            const distance = 70 + Math.random() * 135;
             spark.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
             spark.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-            spark.style.setProperty('--delay', `${Math.random() * 100}ms`);
+            spark.style.setProperty('--delay', `${Math.random() * 130}ms`);
             crash.appendChild(spark);
         }
 
         document.body.appendChild(crash);
-        setTimeout(() => crash.remove(), 1100);
+        setTimeout(() => crash.remove(), 1500);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
