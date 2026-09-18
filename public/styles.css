@@ -108,7 +108,7 @@
             opacity: 0;
         }
         .bg-rocket-mini {
-            width: 250px; height: 250px;
+            width: 150px; height: 150px;
             background: url('images/pixelartrocket.png') no-repeat center center;
             background-size: contain;
             image-rendering: pixelated;
@@ -622,4 +622,10 @@
         @keyframes rocketDebris {
             0% { transform: translate(-50%,-50%) rotate(0deg) scale(1); opacity:1; }
             100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rotation)) scale(.1); opacity:0; }
+        }
+
+        .rocket-crash-metal {
+            border-radius: 2px;
+            background: linear-gradient(135deg, #d7dee8 0 35%, #596579 36% 65%, #f59e0b 66% 100%);
+            box-shadow: 0 0 8px rgba(255,140,40,.75);
         }
