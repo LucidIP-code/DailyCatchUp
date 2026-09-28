@@ -1,5 +1,13 @@
-Commit: c4c59fa7acb53b0e11b49f200d52a4676376655d
-Author: Manoj S <51manoj2004@gmail.com>
+Commit: 196e69460a86d26732386fd14f52981358b532d5
+Author: Manoj S <mailfortempusage@gmail.com>
+Date:   Mon Sep 28 23:45:30 2026 +0530
+Subject: perf(ux): speed up Earth-to-Moon page loader animation to ~1.2s
+- Reduce keyframe animation duration from 2.4s to 1.1s for crisp, fast launch and touchdown.
+- Speed up telemetry text updates and fade-out reveal to 1.25s for enhanced UX responsiveness.
+
+--------------------------------------------------------------------------------
+Commit: fadc0e65ff128b91d85aba2fb2fdf4a8bd88c309
+Author: Manoj S <mailfortempusage@gmail.com>
 Date:   Mon Sep 28 23:26:28 2026 +0530
 Subject: feat(ux): Earth-to-Moon loader animation, On Permission status, dark portal modals & layout tuning
 - Add 4th status action button ("Mark On Permission") and report parser integration.
