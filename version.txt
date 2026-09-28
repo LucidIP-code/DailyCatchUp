@@ -1,4 +1,12 @@
-Commit: 196e69460a86d26732386fd14f52981358b532d5
+Commit: 783b7ea67ebac67ec802283cb73f272a8c3d3a01
+Author: Manoj S <mailfortempusage@gmail.com>
+Date:   Mon Sep 28 23:51:15 2026 +0530
+Subject: perf(ux): tune Earth-to-Moon page loader to smooth 1.8s duration
+- Tune keyframe animation duration to 1.6s for clear visual feel of launch, Mars passage, and lunar touchdown.
+- Adjust telemetry text milestones and set fade-out reveal to 1.8s total.
+
+--------------------------------------------------------------------------------
+Commit: 14a00bcba24e714bc1b61465cad1000a41e07857
 Author: Manoj S <mailfortempusage@gmail.com>
 Date:   Mon Sep 28 23:45:30 2026 +0530
 Subject: perf(ux): speed up Earth-to-Moon page loader animation to ~1.2s
