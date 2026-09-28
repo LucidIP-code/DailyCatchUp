@@ -57,7 +57,13 @@
     firstHalfButton.textContent = '🌅 Mark First Half Leave';
     firstHalfButton.onclick = markFirstHalfLeave;
 
-    wrapper.append(previousButton, leaveButton, firstHalfButton);
+    const permissionButton = document.createElement('button');
+    permissionButton.type = 'button';
+    permissionButton.className = 'btn btn-ghost btn-sm';
+    permissionButton.textContent = '⏱️ Mark On Permission';
+    permissionButton.onclick = markOnPermission;
+
+    wrapper.append(previousButton, leaveButton, firstHalfButton, permissionButton);
     nameSelect.insertAdjacentElement('afterend', wrapper);
     applyTabOrder();
   }
@@ -120,14 +126,33 @@
       container.parentElement.insertBefore(panel, container);
     }
 
+    const isPermission = status === 'On Permission';
     const isFirstHalf = status === 'First Half Leave';
+
+    let titleText = '🏖️ Marked as On Leave';
+    let descText = 'This person is marked as On Leave for today.';
+    let unmarkBtn = `<button type="button" class="btn btn-ghost btn-sm" id="unmark-leave-btn" style="margin-top:12px;">↩️ Unmark On Leave</button>`;
+
+    if (isPermission) {
+      titleText = '⏱️ Marked On Permission';
+      descText = 'On permission is marked for today. You can still enter today\'s tasks below.';
+      unmarkBtn = `<button type="button" class="btn btn-ghost btn-sm" id="unmark-permission-btn" style="margin-top:12px;">↩️ Unmark On Permission</button>`;
+    } else if (isFirstHalf) {
+      titleText = '🌅 First Half Leave';
+      descText = 'First half leave is marked for today. You can still enter today\'s tasks below.';
+      unmarkBtn = `<button type="button" class="btn btn-ghost btn-sm" id="unmark-first-half-btn" style="margin-top:12px;">↩️ Unmark First Half Leave</button>`;
+    }
+
     panel.innerHTML = `
-      <div style="font-size:1.05rem;font-weight:600;color:var(--accent);">${isFirstHalf ? '🌅 First Half Leave' : '🏖️ Marked as On Leave'}</div>
-      <div style="font-size:0.85rem;color:var(--muted);margin-top:6px;">${isFirstHalf ? 'First half leave is marked for today. You can still enter today\'s tasks below.' : 'This person is marked as On Leave for today.'}</div>
-      ${isFirstHalf ? `<button type="button" class="btn btn-ghost btn-sm" id="unmark-first-half-btn" style="margin-top:12px;">↩️ Unmark First Half Leave</button>` : `<button type="button" class="btn btn-ghost btn-sm" id="unmark-leave-btn" style="margin-top:12px;">↩️ Unmark On Leave</button>`}
+      <div style="font-size:1.05rem;font-weight:600;color:var(--accent);">${titleText}</div>
+      <div style="font-size:0.85rem;color:var(--muted);margin-top:6px;">${descText}</div>
+      ${unmarkBtn}
     `;
 
-    if (isFirstHalf) {
+    if (isPermission) {
+      setTaskEntryVisibility(true);
+      $('unmark-permission-btn').onclick = () => unmarkLeave('permission');
+    } else if (isFirstHalf) {
       setTaskEntryVisibility(true);
       $('unmark-first-half-btn').onclick = () => unmarkLeave('first-half');
     } else {
@@ -174,21 +199,27 @@
 
   function showLeaveConfirmation(name, type = 'leave') {
     return new Promise((resolve) => {
+      const isPermission = type === 'permission';
       const isFirstHalf = type === 'first-half';
-      const modalId = isFirstHalf ? 'first-half-confirm-modal' : 'leave-confirm-modal';
+      const modalId = isPermission ? 'permission-confirm-modal' : (isFirstHalf ? 'first-half-confirm-modal' : 'leave-confirm-modal');
       let modal = $(modalId);
       if (!modal) {
         modal = document.createElement('div');
         modal.id = modalId;
         modal.className = 'modal';
+        const title = isPermission ? '⏱️ Mark On Permission' : (isFirstHalf ? '🌅 Mark First Half Leave' : '🏖️ Mark On Leave');
+        const label = isPermission ? 'On Permission' : (isFirstHalf ? 'First Half Leave' : 'On Leave');
+        const desc = isPermission ? 'This will save "On Permission" in the Google Sheet.' : (isFirstHalf ? 'This will save "First Half Leave" in the Google Sheet.' : 'Any existing entry for this person today will be replaced with "On Leave".');
+        const btnText = isPermission ? 'Yes, Mark On Permission' : (isFirstHalf ? 'Yes, Mark First Half Leave' : 'Yes, Mark On Leave');
+
         modal.innerHTML = `
           <div class="modal-content" style="border-top: 4px solid var(--accent);">
-            <h3 style="color: var(--accent); margin-bottom: 12px;">${isFirstHalf ? '🌅 Mark First Half Leave' : '🏖️ Mark On Leave'}</h3>
-            <p>Are you sure you want to mark <strong id="leave-confirm-name" style="color: var(--accent);"></strong> as ${isFirstHalf ? 'First Half Leave' : 'On Leave'} for today?</p>
-            <p style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">${isFirstHalf ? 'This will save "First Half Leave" in the Google Sheet.' : 'Any existing entry for this person today will be replaced with "On Leave".'}</p>
+            <h3 style="color: var(--accent); margin-bottom: 12px;">${title}</h3>
+            <p>Are you sure you want to mark <strong id="leave-confirm-name" style="color: var(--accent);"></strong> as ${label} for today?</p>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">${desc}</p>
             <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
               <button class="btn btn-ghost" id="leave-confirm-cancel">Cancel</button>
-              <button class="btn btn-primary" id="leave-confirm-ok">${isFirstHalf ? 'Yes, Mark First Half Leave' : 'Yes, Mark On Leave'}</button>
+              <button class="btn btn-primary" id="leave-confirm-ok">${btnText}</button>
             </div>
           </div>`;
         document.body.appendChild(modal);
@@ -345,11 +376,48 @@
     }
   }
 
+  async function markOnPermission() {
+    const name = selectedName();
+    if (!name || name === '__ADD_NEW__') {
+      window.showToast('Please select a person first.', 'error');
+      return;
+    }
+
+    refreshDirtyState();
+    if (dirty) {
+      const confirmed = await showOverwriteConfirmation(name);
+      if (!confirmed) return;
+    }
+
+    const confirmed = await showLeaveConfirmation(name, 'permission');
+    if (!confirmed) return;
+
+    const buttons = $('individual-status-actions')?.querySelectorAll('button');
+    const permissionButton = buttons && buttons[3];
+    if (permissionButton) { permissionButton.disabled = true; permissionButton.textContent = '⏱️ Saving...'; }
+
+    try {
+      const data = await postLeaveAction('permission');
+      showLeaveStatus('On Permission');
+      markClean();
+      window.showToast(data.message || `${name} marked as On Permission.`, 'success');
+      if (typeof window.loadDailyStatus === 'function') window.loadDailyStatus();
+    } catch (error) {
+      console.error('On Permission error:', error);
+      window.showToast(error.message || 'Unable to mark On Permission.', 'error');
+    } finally {
+      if (permissionButton) { permissionButton.disabled = false; permissionButton.textContent = '⏱️ Mark On Permission'; }
+    }
+  }
+
   async function unmarkLeave(previousStatusType) {
     const name = selectedName();
     if (!name || name === '__ADD_NEW__') return;
 
-    const button = previousStatusType === 'first-half' ? $('unmark-first-half-btn') : $('unmark-leave-btn');
+    let button = $('unmark-leave-btn');
+    if (previousStatusType === 'permission') button = $('unmark-permission-btn');
+    else if (previousStatusType === 'first-half') button = $('unmark-first-half-btn');
+
     if (button) { button.disabled = true; button.textContent = '↩️ Removing...'; }
 
     try {
@@ -359,14 +427,17 @@
       if (typeof window.addTaskRow === 'function') window.addTaskRow();
       markClean();
       applyTabOrder();
-      window.showToast(data.message || `Leave status removed for ${name}.`, 'success');
+      window.showToast(data.message || `Status removed for ${name}.`, 'success');
       const firstInput = document.querySelector('#tasks-container .task-input');
       if (firstInput) setTimeout(() => firstInput.focus(), 50);
       if (typeof window.loadDailyStatus === 'function') window.loadDailyStatus();
     } catch (error) {
-      console.error('Unmark leave error:', error);
-      window.showToast(error.message || 'Unable to remove leave status.', 'error');
-      if (button) { button.disabled = false; button.textContent = previousStatusType === 'first-half' ? '↩️ Unmark First Half Leave' : '↩️ Unmark On Leave'; }
+      console.error('Unmark status error:', error);
+      window.showToast(error.message || 'Unable to remove status.', 'error');
+      let resetLabel = '↩️ Unmark On Leave';
+      if (previousStatusType === 'permission') resetLabel = '↩️ Unmark On Permission';
+      else if (previousStatusType === 'first-half') resetLabel = '↩️ Unmark First Half Leave';
+      if (button) { button.disabled = false; button.textContent = resetLabel; }
     }
   }
 
@@ -377,7 +448,7 @@
       const data = await response.json();
       if (!response.ok) return;
       const status = String(data.status || '').trim();
-      if (status === 'On Leave' || status === 'First Half Leave') {
+      if (status === 'On Leave' || status === 'First Half Leave' || status === 'On Permission') {
         showLeaveStatus(status);
       } else if (leaveStatus) {
         hideLeaveStatus();

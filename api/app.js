@@ -114,18 +114,16 @@ frame.addEventListener('load',()=>{
         const holidays=data.holidays||[];
         if(!holidays.length){list.innerHTML='<div class="holiday-empty">No holidays configured for '+year+'.</div>';return;}
         list.innerHTML='<table class="holiday-table"><thead><tr><th>Date</th><th>Holiday</th><th></th></tr></thead><tbody>'+holidays.map(function(h){return '<tr><td>'+escapeHtml(h.date)+'</td><td>'+escapeHtml(h.name)+'</td><td style="text-align:right"><button class="btn btn-danger btn-sm holiday-delete" data-date="'+escapeHtml(h.date)+'">Delete</button></td></tr>';}).join('')+'</tbody></table>';
-        list.querySelectorAll('.holiday-delete').forEach(function(b){b.onclick=async function(){if(!confirm('Delete this holiday?'))return;try{const r=await fetch('/api/holidays',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:b.dataset.date})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to delete holiday');w.showToast('Holiday deleted.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}};});
+        list.querySelectorAll('.holiday-delete').forEach(function(b){b.onclick=async function(){const ok=typeof w.showThemeConfirmModal==='function'?await w.showThemeConfirmModal({title:'🗑️ Delete Holiday',message:'Are you sure you want to delete this holiday?',okText:'Yes, Delete',cancelText:'Cancel',isDanger:true}):confirm('Delete this holiday?');if(!ok)return;try{const r=await fetch('/api/holidays',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:b.dataset.date})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to delete holiday');w.showToast('Holiday deleted.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}};});
       }catch(e){list.innerHTML='<div class="holiday-empty">'+escapeHtml(e.message)+'</div>';}
     }
     function escapeHtml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
     d.getElementById('holiday-load').onclick=loadHolidays;
     d.getElementById('holiday-close').onclick=function(){modal.style.display='none';};
     btn.onclick=function(){modal.style.display='flex';loadHolidays();};
-    d.getElementById('holiday-add').onclick=async function(){
-      const year=String(yearInput.value||'').trim();
-      const date=prompt('Holiday date (YYYY-MM-DD):',''); if(date===null)return;
-      const name=prompt('Holiday name:',''); if(name===null)return;
-      try{const r=await fetch('/api/holidays',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:year,date:date,name:name})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Unable to add holiday');w.showToast('Holiday added.','success');loadHolidays();}catch(e){w.showToast(e.message,'error');}
+    d.getElementById('holiday-add').onclick=function(){
+      const addBtn=d.querySelector('.holiday-add')||d.getElementById('holiday-add');
+      if(d.getElementById('holiday-form-modal'))d.getElementById('holiday-form-modal').style.display='flex';
     };
   }
 

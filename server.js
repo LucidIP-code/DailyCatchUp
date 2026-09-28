@@ -137,61 +137,22 @@ async function ensureSheetExists(spreadsheetId, sheetName) {
   }
 }
 
-app.get("/api/options", (req, res) => {
-  const data = getPersistentData();
-  res.json(sortOptions(data));
-});
-
-// 2. Add New Dropdown Option (Pushes and Sorts A-Z)
-app.post("/api/options", (req, res) => {
-  const { type, value } = req.body;
-  if (!type || !value) {
-    return res.status(400).json({ error: "Type and value are required." });
-  }
-
-  const data = getPersistentData();
-  const trimmedValue = value.trim();
-
-  if (type === "name" && !data.names.includes(trimmedValue)) {
-    data.names.push(trimmedValue);
-  } else if (type === "project" && !data.projects.includes(trimmedValue)) {
-    data.projects.push(trimmedValue);
-  }
-
-  sortOptions(data);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-  res.json({ success: true, data });
-});
-
-// 3. Delete Dropdown Option (Removes and maintains A-Z Sort)
-app.delete("/api/options", (req, res) => {
-  try {
-    const { type, value } = req.body;
-    if (!type || !value) {
-      return res.status(400).json({ error: "Type and value are required." });
-    }
-
-    const data = getPersistentData();
-
-    if (type === "name" && data.names) {
-      data.names = data.names.filter(item => item !== value);
-    } else if (type === "project" && data.projects) {
-      data.projects = data.projects.filter(item => item !== value);
-    }
-
-    sortOptions(data);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    res.json({ success: true, data });
-  } catch (err) {
-    console.error("Error removing option:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+// 1-3. Dropdown Options API (Redis-backed via storage.js)
+app.all("/api/options", require("./api/options"));
 
 // 4. Get Google Sheet Link
 app.get("/api/sheet-url", (req, res) => {
   res.json({ url: `https://docs.google.com/spreadsheets/d/${process.env.SPREADSHEET_ID}` });
 });
+
+// Mount modular API handlers for local server
+app.all("/api/options", require("./api/options"));
+app.all("/api/daily-status", require("./api/daily-status"));
+app.all("/api/previous-status", require("./api/previous-status"));
+app.all("/api/holidays", require("./api/holidays"));
+app.all("/api/people", require("./api/people"));
+app.all("/api/people-feed", require("./api/people-feed"));
+app.all("/api/today-holiday-feed", require("./api/today-holiday-feed"));
 
 // 5. Read Today's Status Report
 // 5. Read Today's Status Report (Filters out deleted names from summary)

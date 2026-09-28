@@ -1,0 +1,648 @@
+Commit: c4c59fa7acb53b0e11b49f200d52a4676376655d
+Author: Manoj S <51manoj2004@gmail.com>
+Date:   Mon Sep 28 23:26:28 2026 +0530
+Subject: feat(ux): Earth-to-Moon loader animation, On Permission status, dark portal modals & layout tuning
+- Add 4th status action button ("Mark On Permission") and report parser integration.
+- Revamp page loader into pixel-art Earth-to-Moon trajectory with Mars, touchdown flag planting, and staged status telemetry.
+- Replace native confirm/prompt popups with custom dark-themed portal modals across holiday and task controls.
+- Tune task area card container width to 810px so all 4 status buttons render in a single horizontal row.
+- Add Upstash Redis REST KV support for persistent options, people, and holiday storage on Vercel and local Express server.
+- Update PROJECT_INSIGHTS.md documentation and .gitignore rules.
+
+--------------------------------------------------------------------------------
+Commit: baa139a048f900616460a6ab07606289b77f9b0b
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 15:48:05 2026 +0530
+Subject: Merge pull request #1 from LucidIP-code/ux/rocket-collision
+Fix rocket collision burst and respawn lifecycle
+--------------------------------------------------------------------------------
+Commit: 69c18d1c8d75a13517d4c28acb18344b1563faaa
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 15:23:00 2026 +0530
+Subject: Fix rocket collision burst and respawn lifecycle
+
+--------------------------------------------------------------------------------
+Commit: 93890b81c5921168dca6d207fad1e133257ab32d
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 15:13:10 2026 +0530
+Subject: Use exact nose contact for rocket collisions
+
+--------------------------------------------------------------------------------
+Commit: 5e62c0c7efcc9ac3fc7ca9c4d97095f987566b72
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 15:12:52 2026 +0530
+Subject: Trigger rocket crash at nose-to-nose contact point
+
+--------------------------------------------------------------------------------
+Commit: b118e4dca3677f5d104dc5814cb28729eaf5c67a
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 15:01:05 2026 +0530
+Subject: Normalize rocket size and vary collision point and timing
+
+--------------------------------------------------------------------------------
+Commit: 35fa4022fa261ebfabb04ef0d578b36437bf02af
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 14:53:55 2026 +0530
+Subject: Create cinematic multi-stage rocket explosion
+
+--------------------------------------------------------------------------------
+Commit: d061842e7a4b8e45bc6dfde5bc4e1c3a262075f6
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 14:53:34 2026 +0530
+Subject: Build layered rocket impact with persistent debris
+
+--------------------------------------------------------------------------------
+Commit: 5dce759ccd54140913b27c1abbe6b6c6ab062788
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 14:27:41 2026 +0530
+Subject: Improve realistic rocket explosion debris and smoke
+
+--------------------------------------------------------------------------------
+Commit: 693c714bbee5a91ea81e07d4e215575473753973
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 14:27:26 2026 +0530
+Subject: Slow rocket motion and make crash debris clearly visible
+
+--------------------------------------------------------------------------------
+Commit: 211a07eba1be40e4e0e35a9d03d42614a01171d1
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 13:23:03 2026 +0530
+Subject: Reduce rocket size and add metallic crash fragments
+
+--------------------------------------------------------------------------------
+Commit: 7846d99c3200d63f7a9334933ef3eb912da08ad8
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 13:22:55 2026 +0530
+Subject: Tune rocket size speed and randomize collision area
+
+--------------------------------------------------------------------------------
+Commit: 4119de1caadd0ddfc9dd13fd8d1bd8001f6ee45f
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 13:07:24 2026 +0530
+Subject: Guarantee visible rocket collision at third respawn
+
+--------------------------------------------------------------------------------
+Commit: eb9c48ca899497207bb0fceb3196f7c199ec5f02
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:53:31 2026 +0530
+Subject: Fix respawn counter so collision occurs every third respawn
+
+--------------------------------------------------------------------------------
+Commit: c1a753c9eddec6640ef271fb174a0cdee4680198
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:53:06 2026 +0530
+Subject: Fix guaranteed rocket collision positioning and impact timing
+
+--------------------------------------------------------------------------------
+Commit: 025abedc06a3d0ac4a1446e2de885f0589e5b7bc
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:46:53 2026 +0530
+Subject: Make rocket collision reliably occur every 3 respawns
+
+--------------------------------------------------------------------------------
+Commit: 194f5c3ca373ca6f9ff932908994fa22658f98bb
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:39:43 2026 +0530
+Subject: Make rocket crash visible above task cards
+
+--------------------------------------------------------------------------------
+Commit: 1ac4c9a74e5050bdc8d801dc78dddc3ed1fc0aa2
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:39:25 2026 +0530
+Subject: Enhance rocket crash impact effect
+
+--------------------------------------------------------------------------------
+Commit: e02b4a882de0186045af3572c3dc8f60ba7f43bd
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:33:04 2026 +0530
+Subject: Make rocket crash occur every 3 respawns
+
+--------------------------------------------------------------------------------
+Commit: 299294cfaa44b5838435dfaddfb8b71edce4b23f
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:27:56 2026 +0530
+Subject: Fix rocket collision JavaScript syntax
+
+--------------------------------------------------------------------------------
+Commit: 8f4ac2b0859652547372b04246935c67ea72fe2b
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:20:14 2026 +0530
+Subject: Add pixel-style rocket crash animation
+
+--------------------------------------------------------------------------------
+Commit: 89e11a973de82a4d80b59e808603a5dc327b1f97
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 18 12:20:00 2026 +0530
+Subject: Add real-time collision detection for random rockets
+
+--------------------------------------------------------------------------------
+Commit: aa678035b462fec4e8b6aa9c36ca4d8b17f9d4e6
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Wed Sep 16 16:53:57 2026 +0530
+Subject: Keep On Leave status panel visible
+
+--------------------------------------------------------------------------------
+Commit: f5b8ceda1610357a8004e8f94180d411ec54f2ba
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Wed Sep 16 16:46:57 2026 +0530
+Subject: Improve leave status UI and add first-half leave
+
+--------------------------------------------------------------------------------
+Commit: 6f9ea63c716902ff4408c1b557dde6a0c6dab5b9
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Wed Sep 16 16:46:12 2026 +0530
+Subject: Add full-day and first-half leave status actions
+
+--------------------------------------------------------------------------------
+Commit: c130ea9f65f0e603c947ae9e089cb4928af8c7c5
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Wed Sep 16 16:36:16 2026 +0530
+Subject: Improve task entry UX and previous status feedback
+
+--------------------------------------------------------------------------------
+Commit: cd5629dab314b1b6e8d00a8c8069a4eff99f4422
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Wed Sep 16 16:10:47 2026 +0530
+Subject: Use last filled tasks for Previous Day Status
+
+--------------------------------------------------------------------------------
+Commit: 813d83da1201972bb4a8d8098ad43acfbaa68a43
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 11:40:13 2026 +0530
+Subject: Keep multiple tasks under the same project in Teams report
+
+--------------------------------------------------------------------------------
+Commit: 7ae962d55d2a39e322c419fd1c5d980ad4645cd1
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 11:15:57 2026 +0530
+Subject: Update server.js
+
+--------------------------------------------------------------------------------
+Commit: 97f09318cb2f7dc90270b75f3d3d412ddc80953c
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 10:56:20 2026 +0530
+Subject: changes rocket image
+
+--------------------------------------------------------------------------------
+Commit: 6a9b818b4da22df8660c8b13e95d9db69f7906a8
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 10:55:40 2026 +0530
+Subject: Delete public/images/pixelartrocket.png
+
+--------------------------------------------------------------------------------
+Commit: 98bb408779b307687aa076c1b330a640542bc52f
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 10:51:11 2026 +0530
+Subject: updated rocket image
+
+--------------------------------------------------------------------------------
+Commit: 44b12a3b1a21327367080de9e91d2c30185b1c80
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 10:50:50 2026 +0530
+Subject: Delete public/images/pixelartrocket.png
+
+--------------------------------------------------------------------------------
+Commit: 190923b9746d70ec98990c7cfcca92032513fae5
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 10:44:31 2026 +0530
+Subject: added new pixel rocket image
+
+--------------------------------------------------------------------------------
+Commit: 142cd612f35caa3295ef4fe384863f17df633e8f
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 10:44:06 2026 +0530
+Subject: Delete public/images/pixelartrocket.png
+
+--------------------------------------------------------------------------------
+Commit: 7f9b147af8755f934db412884a4a8789e8f94d6e
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 10:06:30 2026 +0530
+Subject: Use app styled modal for On Leave confirmation
+
+--------------------------------------------------------------------------------
+Commit: 29b9389ec3f30a95af53e447903682794892a7bf
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 09:21:28 2026 +0530
+Subject: Route previous status API on Vercel
+
+--------------------------------------------------------------------------------
+Commit: 1d67a666573b21cd63b096756fed52651ed24f41
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 09:21:14 2026 +0530
+Subject: Wire individual status controls into stable app
+
+--------------------------------------------------------------------------------
+Commit: 25452059d2476a902b22f236baab5aa52118ae03
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 09:20:52 2026 +0530
+Subject: Add individual previous status and on leave controls
+
+--------------------------------------------------------------------------------
+Commit: d76133a5e6c6298f9f225dc4de14cfa34078507e
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Sep 11 09:20:15 2026 +0530
+Subject: Add individual previous status and on leave API
+
+--------------------------------------------------------------------------------
+Commit: 9366d1336170b092bf5f8cb6857dfd08d043dc06
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 14:28:19 2026 +0530
+Subject: Fix routing for today holiday RSS feed
+
+--------------------------------------------------------------------------------
+Commit: 0f779dbb2337b1ff3717c8d32c8860800b668231
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 14:25:02 2026 +0530
+Subject: Add today holiday RSS feed endpoint
+
+--------------------------------------------------------------------------------
+Commit: 8ac618fbee0e3fe2299987714072effb4906d21c
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:57:49 2026 +0530
+Subject: Fix holiday year validation in Manage Holidays
+
+--------------------------------------------------------------------------------
+Commit: c061bb699c53d50beda0d34049f77ab9838cc8a0
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:50:11 2026 +0530
+Subject: Improve holiday manager year field theme
+
+--------------------------------------------------------------------------------
+Commit: a4de8295a73b2bc7b47d3f6fb11a513ed484319e
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:38:09 2026 +0530
+Subject: Support JSON holiday keys in Redis
+
+--------------------------------------------------------------------------------
+Commit: 33a2b68fb9cdb7c2dbc35a8949617b439ef18313
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:36:25 2026 +0530
+Subject: Handle existing holiday Redis key types safely
+
+--------------------------------------------------------------------------------
+Commit: e4e2b86adaa45a0388432bc37dd01159f1c7cb60
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:33:34 2026 +0530
+Subject: Fix Vercel crash caused by nested holiday UI template literal
+
+--------------------------------------------------------------------------------
+Commit: 96e1539c9dc055023bd6137794ed730ebf8b2b63
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:27:43 2026 +0530
+Subject: Fix holiday UI theme and add inline holiday form
+
+--------------------------------------------------------------------------------
+Commit: 77d4a9034cc0c7d974e5f68e259bbb74ee3395d6
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:27:12 2026 +0530
+Subject: Fix holiday Redis storage type compatibility
+
+--------------------------------------------------------------------------------
+Commit: 1432552925e89e11a53cd155a691c689d4313386
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:23:45 2026 +0530
+Subject: Fix nested template literal causing Vercel serverless crash
+
+--------------------------------------------------------------------------------
+Commit: ddc71e73d761cd00b174d42a739ccd990f476ffe
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:23:15 2026 +0530
+Subject: Fix production crash in holiday UI injection
+
+--------------------------------------------------------------------------------
+Commit: 29fe928a75ad7cdfa801a0bbb56088ce7b99c9fd
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:19:21 2026 +0530
+Subject: Expose holidays API on Vercel
+
+--------------------------------------------------------------------------------
+Commit: b4e7acefa7d7363012b7d0a23ce83ea213383eeb
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:19:09 2026 +0530
+Subject: Add holiday management UI and Redis API integration
+
+--------------------------------------------------------------------------------
+Commit: 32b19aaa67cddc24747dfaf75e01da9d6915ea38
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:18:24 2026 +0530
+Subject: Add annual holiday storage in Redis
+
+--------------------------------------------------------------------------------
+Commit: 52330b9547b3f2da2040b830a3cf7af32afc04df
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 12:18:07 2026 +0530
+Subject: Add Redis-backed holidays API
+
+--------------------------------------------------------------------------------
+Commit: 7d0aba0402b7d6b6776144a507e1e728acbb0f4f
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Tue Sep 1 10:51:58 2026 +0530
+Subject: Exclude Saturdays and Sundays from automatically generated monthly sheets
+
+--------------------------------------------------------------------------------
+Commit: 93a682139ba2a9b28f6c42fca106eb21f6079c58
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Sat Aug 29 12:41:23 2026 +0530
+Subject: Update people-email-ui.js
+
+--------------------------------------------------------------------------------
+Commit: 5fa42b68f59ab240e481cc583b6a6fadc9823818
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Sat Aug 29 11:15:33 2026 +0530
+Subject: fix: route people RSS feed on Vercel
+
+--------------------------------------------------------------------------------
+Commit: 9cbd5d3718e0ab09f92a31d4f96b7363c745226a
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Sat Aug 29 11:08:12 2026 +0530
+Subject: feat: add RSS feed for people and email IDs
+
+--------------------------------------------------------------------------------
+Commit: 004969a858b2c5de7c9e72b3121f7970cc53852c
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Sat Aug 29 10:48:52 2026 +0530
+Subject: Update people-email-ui.js
+changed the placeholder for the email
+--------------------------------------------------------------------------------
+Commit: b7690c8b83a5e1eaad6d9e3e5ff84a3bb2c9b6ce
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Sat Aug 29 10:42:36 2026 +0530
+Subject: fix: persist new person email from existing add-name modal
+
+--------------------------------------------------------------------------------
+Commit: 507ac41fc0e44bd69b409da84739907757aa64aa
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 18:38:34 2026 +0530
+Subject: fix: match email input styling with portal theme
+
+--------------------------------------------------------------------------------
+Commit: 6cf94d1fcc44c26b06678a9f79dbd65bc9a68c64
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 18:33:05 2026 +0530
+Subject: feat: serve enhanced people UI at production root
+
+--------------------------------------------------------------------------------
+Commit: feac777019841abda4b9ada66e47d1979c534a37
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 18:32:54 2026 +0530
+Subject: feat: add email input to existing person modal without replacing app UI
+
+--------------------------------------------------------------------------------
+Commit: 076a48e17accd2e0851462312cb39fb7b12118b9
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 18:29:26 2026 +0530
+Subject: feat: add email field behavior to existing Add New Name modal
+
+--------------------------------------------------------------------------------
+Commit: fc0c677ab49cbc322692da5cf9562de76a7edc1e
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 18:22:03 2026 +0530
+Subject: feat: expose people API on Vercel
+
+--------------------------------------------------------------------------------
+Commit: 8d25d4a5d4eb90781801580371547d1bba2a7094
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 18:21:56 2026 +0530
+Subject: feat: add people API with email support
+
+--------------------------------------------------------------------------------
+Commit: 0d3532d5c66658a5d25eece250d613d54e4e78ce
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 18:21:49 2026 +0530
+Subject: feat: store person email mappings alongside Redis names
+
+--------------------------------------------------------------------------------
+Commit: b23f8786304269667812ecd04d5938dadcedace2
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 14:59:01 2026 +0530
+Subject: fix: route daily status through Redis-backed API
+
+--------------------------------------------------------------------------------
+Commit: 427eccbfd2c9aa34b64aedf51a69d3a5e2d2c53f
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 14:58:53 2026 +0530
+Subject: fix: read daily status active names and projects from Redis
+
+--------------------------------------------------------------------------------
+Commit: 521623c3e44ecfc207a4b9b72551b6ae6fea22bd
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:29:57 2026 +0530
+Subject: fix: use exact Upstash REST API URL and token variables
+
+--------------------------------------------------------------------------------
+Commit: c26a0835abcd6c4fd3f4c97f77bef96f654bd4da
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:26:52 2026 +0530
+Subject: debug: report available Upstash variable names without values
+
+--------------------------------------------------------------------------------
+Commit: 8054e81adbce1f3a0ea7c0198f947e42cefa5f3a
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:24:57 2026 +0530
+Subject: fix: use actual Upstash integration API token variable
+
+--------------------------------------------------------------------------------
+Commit: 687f3680577b58c7995f44f66c61d746f9aaabfa
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:22:46 2026 +0530
+Subject: fix: use exact Vercel Upstash REST token variable
+
+--------------------------------------------------------------------------------
+Commit: e81b31dcf2843d0df9429f5b59aa91fc088d022f
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:17:46 2026 +0530
+Subject: fix: recognize Upstash integration variables and prevent readonly fallback
+
+--------------------------------------------------------------------------------
+Commit: bef7b3e190343a5014b58e7235a77c7aef563d60
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:14:26 2026 +0530
+Subject: fix: support Vercel Upstash integration variable names
+
+--------------------------------------------------------------------------------
+Commit: 6d3643a70a914bb827acb8c2243adf39229e100b
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:14:14 2026 +0530
+Subject: fix: route options API to Redis-backed function
+
+--------------------------------------------------------------------------------
+Commit: 940037efe2557ff4c3d61684b3f52da61811a7d2
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:09:28 2026 +0530
+Subject: feat: route options API to persistent storage function
+
+--------------------------------------------------------------------------------
+Commit: b51e9b2563d04bad428e9347e1cc052f3a76f416
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:09:23 2026 +0530
+Subject: feat: serve options API from persistent storage
+
+--------------------------------------------------------------------------------
+Commit: 142b5c152c7346c4d19d3aea17b8bee42833c0d8
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:09:16 2026 +0530
+Subject: fix: support Vercel Upstash integration variable names
+
+--------------------------------------------------------------------------------
+Commit: 29a1b41bb891347e7b077c3a53f188343c5dc4f9
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:09:04 2026 +0530
+Subject: feat: add Upstash Redis dependency
+
+--------------------------------------------------------------------------------
+Commit: fc98d8fa8ae8d3153c83f8e083ca376b0d2db704
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 13:08:36 2026 +0530
+Subject: feat: add persistent Redis-backed options storage
+
+--------------------------------------------------------------------------------
+Commit: bc4c1dd2555a7ec355361278bac7b57afa4034c8
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 12:36:30 2026 +0530
+Subject: docs: add comprehensive project README
+
+--------------------------------------------------------------------------------
+Commit: 21caf39b58fe6e5601d195188587e7275230e0d2
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Fri Aug 28 10:24:14 2026 +0530
+Subject: Update data.json
+
+--------------------------------------------------------------------------------
+Commit: 88a30cc58773feeb167891a356ca272855494489
+Author: TempUser <mailfortempusage@gmail.com>
+Date:   Thu Aug 27 18:49:26 2026 +0530
+Subject: Update data.json
+Added "General " - Project label
+--------------------------------------------------------------------------------
+Commit: f3737a81b8e20079b93cbe70ee65532b6d726f2b
+Author: Thiyanesh Kumar JR <thiyanesh@lucidimaging.in>
+Date:   Fri Aug 14 16:31:37 2026 +0530
+Subject: UpdatedImage
+
+--------------------------------------------------------------------------------
+Commit: 5256415e45ee8ba89a3c37b223986363ec088a2c
+Author: SharathS <sharath@lucidimaging.in>
+Date:   Thu Aug 13 19:04:24 2026 +0530
+Subject: Enhance UI with pixel art background, random rockets, interactive blasts, custom cursors, and extract CSS
+
+--------------------------------------------------------------------------------
+Commit: 55becfc0793c4f879d72cb95d0f5619b9d1fb880
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 12:03:56 2026 +0530
+Subject: Update server.js
+
+--------------------------------------------------------------------------------
+Commit: 02839850d89ed14d7fd79538234ab64e659bfead
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 12:03:36 2026 +0530
+Subject: Update report.js
+
+--------------------------------------------------------------------------------
+Commit: 87c335e77ae36fafa2f5b2f6064acdadd0134604
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 12:03:13 2026 +0530
+Subject: Update index.html
+
+--------------------------------------------------------------------------------
+Commit: d1950749b9075ffbaaca51c27c3ba02dcdc89d35
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:19:43 2026 +0530
+Subject: Add files via upload
+
+--------------------------------------------------------------------------------
+Commit: ae4d3383ab0610159e1fb689a8190b296e94d9b4
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:19:34 2026 +0530
+Subject: Delete public/delete.png
+
+--------------------------------------------------------------------------------
+Commit: 8440102784842302c93c38304d70690fb50529a8
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:15:55 2026 +0530
+Subject: Add files via upload
+
+--------------------------------------------------------------------------------
+Commit: 80c189ba34338ef269a955f659f27b772b47a9d1
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:15:40 2026 +0530
+Subject: Delete public/delete.png
+
+--------------------------------------------------------------------------------
+Commit: db2806f2fabcc5f61879f22066717e2318a9edde
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:13:52 2026 +0530
+Subject: Add files via upload
+
+--------------------------------------------------------------------------------
+Commit: b16fccc26869981190724da952c60fd7493f37f4
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:13:28 2026 +0530
+Subject: Delete public/delete.png
+
+--------------------------------------------------------------------------------
+Commit: b775ecb4f3ac11fa91506aa1a253d0031ee0c4d3
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:06:38 2026 +0530
+Subject: Add files via upload
+
+--------------------------------------------------------------------------------
+Commit: 7bb969b2a7014a649d6395c0c538cf931996f0e6
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 10:06:18 2026 +0530
+Subject: Delete delete.png
+
+--------------------------------------------------------------------------------
+Commit: c9ee7887637c8983067e12f4950b0de7b4a8534c
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 09:59:57 2026 +0530
+Subject: Add files via upload
+
+--------------------------------------------------------------------------------
+Commit: 1a7ccd23a1f5663fe16e693e210e55e90a7a5936
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 09:59:45 2026 +0530
+Subject: Update index.html
+
+--------------------------------------------------------------------------------
+Commit: 21a978d358ec10317f556ec030bfd6d03f079dae
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 09:59:14 2026 +0530
+Subject: Update report.js
+
+--------------------------------------------------------------------------------
+Commit: d69e988890f6fe645b957ff09f913df8b375bcb2
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 09:57:46 2026 +0530
+Subject: Add files via upload
+
+--------------------------------------------------------------------------------
+Commit: 0e84c489304f8fb16f80e449a004502bec927314
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Thu Aug 13 09:57:07 2026 +0530
+Subject: Update index.html
+
+--------------------------------------------------------------------------------
+Commit: 2ba3c1fbd155ea882dd816a93a9086df1716b22f
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Wed Aug 12 18:49:34 2026 +0530
+Subject: Update index.html
+
+--------------------------------------------------------------------------------
+Commit: 356b115ab600b10d35d3acd9ffaf8dfa3a045d08
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Wed Aug 12 18:24:25 2026 +0530
+Subject: Update index.html
+
+--------------------------------------------------------------------------------
+Commit: dfd9bc3bf4359aee1e14daf745efd92701aa1c3f
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Wed Aug 12 18:20:42 2026 +0530
+Subject: Update server.js
+
+--------------------------------------------------------------------------------
+Commit: 024ca0544e6cca3f73881d03b52c7bef8aa020cc
+Author: LucidIP-code <mailfortempusage@gmail.com>
+Date:   Wed Aug 12 18:14:51 2026 +0530
+Subject: Add files via upload
+
+--------------------------------------------------------------------------------

@@ -47,7 +47,26 @@ async function deletePerson(name){const cleanName=String(name||"").trim();if(!cl
 
 function holidayKey(year) { return `${REDIS_PREFIX}:holidays:${year}`; }
 function validateYear(year) { const y=String(year||"").trim(); if(!/^\d{4}$/.test(y)) throw new Error("A valid 4-digit year is required."); return y; }
-function validateDate(date, year) { const d=String(date||"").trim(); const y=validateYear(year); if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d.slice(0,4)!==y) throw new Error("Holiday date must be YYYY-MM-DD and match the selected year."); const parsed=new Date(`${d}T00:00:00Z`); if(Number.isNaN(parsed.getTime())||parsed.toISOString().slice(0,10)!==d) throw new Error("Invalid holiday date."); return d; }
+function validateDate(date, year) {
+  let d = String(date || "").trim();
+  const y = validateYear(year);
+
+  // Normalize YYYY-M-D, YYYY/MM/DD, DD-MM-YYYY to standard YYYY-MM-DD
+  const parts = d.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (parts) {
+    d = `${parts[1]}-${parts[2].padStart(2, "0")}-${parts[3].padStart(2, "0")}`;
+  } else {
+    const reverseParts = d.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (reverseParts) {
+      d = `${reverseParts[3]}-${reverseParts[2].padStart(2, "0")}-${reverseParts[1].padStart(2, "0")}`;
+    }
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d.slice(0, 4) !== y) throw new Error(`Holiday date must be YYYY-MM-DD for year ${y}. Got: "${date}"`);
+  const parsed = new Date(`${d}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== d) throw new Error("Invalid holiday date.");
+  return d;
+}
 function normalizeHoliday(raw, fieldDate) {
   if (raw == null && !fieldDate) return null;
   if (typeof raw === "object" && raw !== null) {

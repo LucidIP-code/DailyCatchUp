@@ -13,10 +13,13 @@
     <div id="ag-loader">
         <div class="pixel-scene">
             <div class="pixel-stars"></div>
+            <div class="pixel-mars"></div>
+            <div class="pixel-moon"></div>
             <div class="pixel-earth"></div>
             <div class="pixel-rocket"></div>
+            <div class="pixel-flag"></div>
         </div>
-        <div class="ag-text">LAUNCHING...</div>
+        <div class="ag-text" id="loader-text">🚀 LAUNCHING FROM EARTH...</div>
     </div>
 
     <div id="space-background">
@@ -235,9 +238,56 @@
         updateRemoveButtonsVisibility();
     }
 
-   function removeTaskRow(buttonElem) {
-    // Show confirmation dialog before removing the project task block
-    const confirmDelete = confirm("Are you sure you want to remove this project task block?");
+   function showThemeConfirmModal({ title = '⚠️ Confirmation', message = 'Are you sure?', okText = 'Confirm', cancelText = 'Cancel', isDanger = true }) {
+       return new Promise((resolve) => {
+           let modal = document.getElementById('theme-confirm-modal');
+           if (!modal) {
+               modal = document.createElement('div');
+               modal.id = 'theme-confirm-modal';
+               modal.className = 'modal';
+               modal.innerHTML = `
+                   <div class="modal-content" style="border-top: 4px solid var(--accent); max-width: 440px; width: 90%;">
+                       <h3 id="theme-confirm-title" style="color: var(--accent); margin-bottom: 12px;"></h3>
+                       <p id="theme-confirm-message" style="font-size: 0.95rem; color: var(--text); line-height: 1.5;"></p>
+                       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+                           <button class="btn btn-ghost" id="theme-confirm-cancel"></button>
+                           <button class="btn" id="theme-confirm-ok"></button>
+                       </div>
+                   </div>`;
+               document.body.appendChild(modal);
+           }
+
+           document.getElementById('theme-confirm-title').textContent = title;
+           document.getElementById('theme-confirm-message').textContent = message;
+           
+           const cancelBtn = document.getElementById('theme-confirm-cancel');
+           const okBtn = document.getElementById('theme-confirm-ok');
+           
+           cancelBtn.textContent = cancelText;
+           okBtn.textContent = okText;
+           okBtn.className = isDanger ? 'btn btn-danger' : 'btn btn-primary';
+
+           modal.style.display = 'flex';
+
+           const finish = (value) => {
+               modal.style.display = 'none';
+               resolve(value);
+           };
+
+           cancelBtn.onclick = () => finish(false);
+           okBtn.onclick = () => finish(true);
+       });
+   }
+   window.showThemeConfirmModal = showThemeConfirmModal;
+
+   async function removeTaskRow(buttonElem) {
+    const confirmDelete = await showThemeConfirmModal({
+        title: '🗑️ Remove Task Block',
+        message: 'Are you sure you want to remove this project task block?',
+        okText: 'Yes, Remove',
+        cancelText: 'Cancel',
+        isDanger: true
+    });
     if (!confirmDelete) return;
 
     const row = buttonElem.closest('.task-row');
@@ -344,8 +394,14 @@
     async function removeOptionItem(value) {
     const itemType = currentManageType === 'name' ? 'person name' : 'project';
     
-    // CONFIRMATION PROMPT
-    const confirmDelete = confirm(`Are you sure you want to remove the ${itemType} "${value}"?`);
+    // THEME-STYLED CONFIRMATION MODAL
+    const confirmDelete = await showThemeConfirmModal({
+        title: `🗑️ Remove ${currentManageType === 'name' ? 'Person Name' : 'Project'}`,
+        message: `Are you sure you want to remove the ${itemType} "${value}"?`,
+        okText: 'Yes, Remove',
+        cancelText: 'Cancel',
+        isDanger: true
+    });
     if (!confirmDelete) return;
 
     try {
@@ -891,12 +947,18 @@
         initRandomRockets();
     });
     window.addEventListener('load', () => {
+        const textEl = document.getElementById('loader-text');
+        setTimeout(() => { if (textEl) textEl.textContent = '🌌 TRAVERSING THE COSMOS...'; }, 900);
+        setTimeout(() => { if (textEl) textEl.textContent = '🌕 TOUCHDOWN ON THE MOON!'; }, 1800);
         setTimeout(() => {
             const loader = document.getElementById('ag-loader');
             if (loader) loader.classList.add('hidden');
-        }, 2200);
+        }, 2600);
     });
 </script>
+    <script src="holiday-ui.js"></script>
+    <script src="previous-status-ui.js"></script>
+    <script src="people-email-ui.js"></script>
 </body>
 </html>
 

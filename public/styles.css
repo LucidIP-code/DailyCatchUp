@@ -132,7 +132,7 @@
         }
 
         .header {
-            max-width: 780px;
+            max-width: 810px;
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
@@ -169,7 +169,7 @@
             transform: scale(0.98);
         }
         .btn-sm {
-            padding: 6px 12px;
+            padding: 6px 10px;
             font-size: 0.8rem;
         }
         .btn-primary { 
@@ -218,7 +218,7 @@
         }
 
         .tabs { 
-            max-width: 780px; 
+            max-width: 810px; 
             margin: 0 auto 20px; 
             display: flex; 
             gap: 12px; 
@@ -249,7 +249,7 @@
         }
 
         .card {
-            max-width: 780px;
+            max-width: 810px;
             margin: 0 auto;
             background: var(--surface);
             border: 1px solid var(--border);
@@ -275,7 +275,7 @@
             margin-bottom: 8px;
         }
         label { font-size: 0.9rem; font-weight: 600; color: var(--accent); }
-        select, textarea, input[type="text"] {
+        select, textarea, input[type="text"], input[type="email"], input[type="date"], input[type="number"] {
             width: 100%; 
             padding: 12px 14px; 
             background: var(--surface2); 
@@ -286,12 +286,13 @@
             font-size: 0.95rem;
             transition: all 0.25s ease;
             caret-color: #00FFFF;
+            box-sizing: border-box;
         }
         textarea {
             resize: vertical;
             min-height: 80px;
         }
-        select:focus, textarea:focus, input[type="text"]:focus { 
+        select:focus, textarea:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="date"]:focus, input[type="number"]:focus { 
             outline: none;
             border-color: var(--accent); 
             background: var(--surface);
@@ -425,7 +426,7 @@
         .toast-info { border-left: 4px solid var(--accent); }
         .toast-icon { font-size: 1.2rem; }
 
-        /* Rocket Launch Loader */
+        /* Rocket Earth-to-Moon Launch Loader */
         #ag-loader {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -435,23 +436,53 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: transform 0.6s cubic-bezier(0.5, 0, 0.2, 1);
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
         #ag-loader.hidden {
-            transform: translateY(-100vh);
+            opacity: 0;
+            transform: scale(1.05);
+            pointer-events: none;
         }
         .pixel-scene {
             position: relative;
-            width: 200px;
-            height: 200px;
+            width: 240px;
+            height: 240px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+        .pixel-moon {
+            position: absolute;
+            top: 15px;
+            width: 4px; height: 4px;
+            background: transparent;
+            box-shadow:
+                8px 0 0 #cbd5e1, 12px 0 0 #cbd5e1, 16px 0 0 #cbd5e1,
+                4px 4px 0 #cbd5e1, 8px 4px 0 #94a3b8, 12px 4px 0 #e2e8f0, 16px 4px 0 #e2e8f0, 20px 4px 0 #cbd5e1,
+                4px 8px 0 #cbd5e1, 8px 8px 0 #e2e8f0, 12px 8px 0 #e2e8f0, 16px 8px 0 #94a3b8, 20px 8px 0 #cbd5e1,
+                4px 12px 0 #cbd5e1, 8px 12px 0 #94a3b8, 12px 12px 0 #e2e8f0, 16px 12px 0 #e2e8f0, 20px 12px 0 #cbd5e1,
+                8px 16px 0 #cbd5e1, 12px 16px 0 #cbd5e1, 16px 16px 0 #cbd5e1;
+            transform: scale(4.5);
+            animation: moonApproach 2.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        .pixel-mars {
+            position: absolute;
+            top: 30px; left: 15px;
+            width: 4px; height: 4px;
+            background: transparent;
+            box-shadow:
+                4px 0 0 #f43f5e, 8px 0 0 #f43f5e,
+                0 4px 0 #f43f5e, 4px 4px 0 #fb923c, 8px 4px 0 #f43f5e, 12px 4px 0 #f43f5e,
+                0 8px 0 #f43f5e, 4px 8px 0 #f43f5e, 8px 8px 0 #fb923c, 12px 8px 0 #f43f5e,
+                4px 12px 0 #f43f5e, 8px 12px 0 #f43f5e;
+            transform: scale(2.2);
+            opacity: 0.85;
+            animation: marsDrift 2.4s ease-out forwards;
+        }
         .pixel-earth {
             position: absolute;
-            bottom: 20px;
+            bottom: 10px;
             width: 4px; height: 4px;
             background: transparent;
             box-shadow:
@@ -461,12 +492,11 @@
                 4px 12px 0 #10b981, 8px 12px 0 #5cbfed, 12px 12px 0 #5cbfed, 16px 12px 0 #10b981, 20px 12px 0 #5cbfed,
                 8px 16px 0 #10b981, 12px 16px 0 #5cbfed, 16px 16px 0 #5cbfed;
             transform: scale(4);
-            animation: earthRecede 2s ease-in forwards;
-            animation-delay: 0.5s;
+            animation: earthRecede 2.4s ease-in forwards;
         }
         .pixel-rocket {
             position: absolute;
-            bottom: 60px;
+            bottom: 45px;
             width: 4px; height: 4px;
             background: transparent;
             box-shadow: 
@@ -478,8 +508,24 @@
                 4px 20px 0 #f43f5e, 12px 20px 0 #f43f5e, 20px 20px 0 #f43f5e,
                 12px 24px 0 #faba71;
             transform: scale(3);
-            animation: launchRocket 2s ease-in forwards;
-            animation-delay: 0.5s;
+            animation: launchAndLandRocket 2.4s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+        }
+        .pixel-flag {
+            position: absolute;
+            top: 4px;
+            right: 80px;
+            width: 2px; height: 2px;
+            background: transparent;
+            box-shadow:
+                4px 0 0 #f43f5e, 8px 0 0 #f43f5e, 12px 0 0 #f43f5e,
+                4px 4px 0 #f43f5e, 8px 4px 0 #5cbfed, 12px 4px 0 #f43f5e,
+                4px 8px 0 #38bdf8,
+                4px 12px 0 #38bdf8,
+                4px 16px 0 #38bdf8;
+            transform: scale(2.5);
+            opacity: 0;
+            animation: plantFlag 0.4s ease-out forwards;
+            animation-delay: 2.1s;
         }
         .pixel-stars {
             position: absolute;
@@ -490,32 +536,47 @@
                 50px 50px 0 #fff, 150px 20px 0 #fff, 250px 80px 0 #fff,
                 30px 150px 0 #fff, 180px 130px 0 #fff, 220px 190px 0 #fff,
                 90px 220px 0 #fff, 20px 280px 0 #fff, 170px 260px 0 #fff;
-            animation: starsMove 2s ease-in forwards;
-            animation-delay: 0.5s;
+            animation: starsMove 2.4s ease-in forwards;
         }
         .ag-text {
             font-family: 'Syne', sans-serif;
-            font-size: 0.9rem;
-            letter-spacing: 4px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 3px;
             color: var(--accent);
-            margin-top: 40px;
-            animation: agFade 0.5s infinite alternate;
+            margin-top: 36px;
+            animation: agFade 0.6s infinite alternate;
         }
 
-        @keyframes launchRocket {
+        @keyframes launchAndLandRocket {
             0% { transform: scale(3) translateY(0); }
-            10% { transform: scale(3) translateY(2px); }
-            20% { transform: scale(3) translateY(-2px); }
-            30% { transform: scale(3) translateY(2px); }
-            100% { transform: scale(3) translateY(-150px); }
+            8% { transform: scale(3) translateY(3px); }
+            16% { transform: scale(3) translateY(-3px); }
+            24% { transform: scale(3) translateY(2px); }
+            75% { transform: scale(3) translateY(-120px); }
+            90% { transform: scale(3) translateY(-138px); }
+            100% { transform: scale(3) translateY(-135px); }
+        }
+        @keyframes moonApproach {
+            0% { transform: scale(2.5) translateY(-30px); opacity: 0.5; }
+            40% { opacity: 1; }
+            100% { transform: scale(4.5) translateY(0); opacity: 1; }
+        }
+        @keyframes marsDrift {
+            0% { transform: scale(1.8) translateY(-15px); opacity: 0.4; }
+            100% { transform: scale(2.2) translateY(10px); opacity: 0.85; }
         }
         @keyframes earthRecede {
-            0% { transform: scale(4) translateY(0); }
-            100% { transform: scale(2) translateY(150px); opacity: 0; }
+            0% { transform: scale(4) translateY(0); opacity: 1; }
+            100% { transform: scale(1.5) translateY(90px); opacity: 0.2; }
+        }
+        @keyframes plantFlag {
+            0% { transform: scale(1) translateY(10px); opacity: 0; }
+            100% { transform: scale(2.5) translateY(0); opacity: 1; }
         }
         @keyframes starsMove {
             0% { transform: translateY(0); }
-            100% { transform: translateY(150px); opacity: 0; }
+            100% { transform: translateY(120px); opacity: 0.4; }
         }
         @keyframes agFade {
             0% { opacity: 0.4; }

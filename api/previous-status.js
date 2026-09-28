@@ -50,7 +50,7 @@ function columnLetter(index) {
 
 function parseStatus(status, knownProjects) {
   const text = String(status || "").trim();
-  if (!text || /^catchup not filled$/i.test(text) || /^on leave$/i.test(text) || /^first half leave$/i.test(text)) return [];
+  if (!text || /^catchup not filled$/i.test(text) || /^on leave$/i.test(text) || /^first half leave$/i.test(text) || /^on permission$/i.test(text)) return [];
 
   const projects = (knownProjects || [])
     .map(p => String(p).trim())
@@ -245,6 +245,7 @@ module.exports = async (req, res) => {
       const statusByAction = {
         leave: "On Leave",
         "first-half": "First Half Leave",
+        permission: "On Permission",
         unmark: ""
       };
 
@@ -273,7 +274,8 @@ module.exports = async (req, res) => {
       const messages = {
         leave: `Marked ${name} as On Leave.`,
         "first-half": `Marked ${name} as First Half Leave.`,
-        unmark: `On Leave status removed for ${name}.`
+        permission: `Marked ${name} as On Permission.`,
+        unmark: `Status removed for ${name}.`
       };
       return res.json({ success: true, status: statusByAction[action], message: messages[action] });
     }

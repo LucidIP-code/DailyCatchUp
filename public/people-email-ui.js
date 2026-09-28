@@ -5,7 +5,8 @@
     const group = document.createElement('div');
     group.id = 'person-email-group';
     group.className = 'form-group';
-    group.innerHTML = '<label id="person-email-label">Email ID:</label><input type="email" id="person-email-input" placeholder="name@company.in" autocomplete="email">';
+    group.style.marginTop = '14px';
+    group.innerHTML = '<label id="person-email-label" style="display:block;margin-bottom:8px;">Email ID:</label><input type="email" id="person-email-input" placeholder="name@company.in" autocomplete="email">';
     const valueGroup = document.getElementById('input-modal-value').closest('.form-group');
     valueGroup.insertAdjacentElement('afterend', group);
   }
