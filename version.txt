@@ -1,3 +1,11 @@
+Commit: a4c9e437f69fd91e55a6a400e403e37993f65112
+Author: Manoj S <mailfortempusage@gmail.com>
+Date:   Tue Sep 29 16:27:25 2026 +0530
+Subject: fix: auto-populate today's tasks on name selection & prevent false reload confirmation
+- Automatically fetch and display today's entered tasks when a person selects their name.
+- Fix baseline snapshot normalization and mark clean on submit/clear to eliminate invalid reload confirmation prompts.
+
+--------------------------------------------------------------------------------
 Commit: 783b7ea67ebac67ec802283cb73f272a8c3d3a01
 Author: Manoj S <mailfortempusage@gmail.com>
 Date:   Mon Sep 28 23:51:15 2026 +0530
