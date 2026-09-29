@@ -22,14 +22,41 @@
     return JSON.stringify({ name: selectedName(), rows });
   }
 
+  function normalizeSnapshot(snapshotStr) {
+    try {
+      const data = typeof snapshotStr === 'string' ? JSON.parse(snapshotStr || '{}') : (snapshotStr || {});
+      const name = data.name || '';
+      const rows = (data.rows || [])
+        .map(r => ({ project: (r.project || '').trim(), details: (r.details || '').trim() }))
+        .filter(r => r.project || r.details);
+      return JSON.stringify({ name, rows });
+    } catch (e) {
+      return '';
+    }
+  }
+
   function refreshDirtyState() {
-    dirty = currentSnapshot() !== baselineSnapshot;
+    if (!selectedName()) {
+      dirty = false;
+      return;
+    }
+    dirty = normalizeSnapshot(currentSnapshot()) !== normalizeSnapshot(baselineSnapshot);
   }
 
   function markClean() {
     baselineSnapshot = currentSnapshot();
     dirty = false;
   }
+
+  window.markClean = markClean;
+  window.clearUserTasksAndMarkClean = (name) => {
+    if (selectedName() === name) {
+      hideLeaveStatus();
+      clearTaskRows();
+      if (typeof window.addTaskRow === 'function') window.addTaskRow();
+      markClean();
+    }
+  };
 
   function addControls() {
     const nameSelect = $('name-select');
@@ -447,16 +474,29 @@
       const response = await fetch('/api/previous-status?mode=today&name=' + encodeURIComponent(name));
       const data = await response.json();
       if (!response.ok) return;
+
       const status = String(data.status || '').trim();
-      if (status === 'On Leave' || status === 'First Half Leave' || status === 'On Permission') {
-        showLeaveStatus(status);
+      if (status === 'On Leave' || status === 'First Half Leave' || status === 'On Permission' ||
+          status.startsWith('On Leave') || status.startsWith('First Half Leave') || status.startsWith('On Permission')) {
+        let leaveType = 'On Leave';
+        if (status.includes('First Half Leave')) leaveType = 'First Half Leave';
+        else if (status.includes('On Permission')) leaveType = 'On Permission';
+        showLeaveStatus(leaveType);
       } else if (leaveStatus) {
         hideLeaveStatus();
       }
+
+      if (Array.isArray(data.tasks) && data.tasks.length > 0) {
+        fillPreviousTasks(data.tasks);
+      }
+
+      markClean();
     } catch (error) {
       console.error('Today leave status error:', error);
     }
   }
+
+  window.loadTodayLeaveStatus = loadTodayLeaveStatus;
 
   function applyTabOrder() {
     const nameSelect = $('name-select');

@@ -50,7 +50,7 @@ function columnLetter(index) {
 
 function parseStatus(status, knownProjects) {
   const text = String(status || "").trim();
-  if (!text || /^catchup not filled$/i.test(text) || /^on leave$/i.test(text) || /^first half leave$/i.test(text) || /^on permission$/i.test(text)) return [];
+  if (!text || /^catchup not filled$/i.test(text) || /^on leave$/i.test(text)) return [];
 
   const projects = (knownProjects || [])
     .map(p => String(p).trim())
@@ -62,6 +62,9 @@ function parseStatus(status, knownProjects) {
   let current = null;
 
   for (const line of lines) {
+    if (/^first half leave$/i.test(line) || /^on permission$/i.test(line) || /^on leave$/i.test(line) || /^catchup not filled$/i.test(line)) {
+      continue;
+    }
     let project = null;
     let detail = "";
 
@@ -223,7 +226,9 @@ module.exports = async (req, res) => {
     if (req.method === "GET") {
       if (String(req.query.mode || "").toLowerCase() === "today") {
         const status = await getTodayStatus(spreadsheetId, name);
-        return res.json({ name, status });
+        const options = await getOptions();
+        const tasks = parseStatus(status, options.projects || []);
+        return res.json({ name, status, tasks });
       }
 
       const options = await getOptions();

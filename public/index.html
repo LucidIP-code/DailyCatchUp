@@ -200,6 +200,9 @@
             if (document.querySelectorAll('.task-row').length === 0) {
                 addTaskRow();
             }
+            if (nameSelect.value && typeof window.loadTodayLeaveStatus === 'function') {
+                window.loadTodayLeaveStatus(nameSelect.value);
+            }
         } catch (e) {
             console.error("Error loading options:", e);
             showToast("Failed to load options from server.", "error");
@@ -506,6 +509,7 @@
             if (result.success) {
                 showToast("Tasks successfully written to Excel!", "success");
                 closeConfirmation();
+                if (typeof window.markClean === 'function') window.markClean();
                 switchTab('status');
             } else {
                 showToast("Error: " + result.error, "error");
@@ -557,6 +561,9 @@
             if (result.success) {
                 showToast(`Cleared entry for ${targetDeleteName}`, "success");
                 closeDeleteModal();
+                if (typeof window.clearUserTasksAndMarkClean === 'function') {
+                    window.clearUserTasksAndMarkClean(targetDeleteName);
+                }
                 loadDailyStatus();
             } else {
                 showToast("Error: " + result.error, "error");
