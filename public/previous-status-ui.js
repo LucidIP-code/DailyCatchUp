@@ -499,21 +499,9 @@
   window.loadTodayLeaveStatus = loadTodayLeaveStatus;
 
   function applyTabOrder() {
-    const nameSelect = $('name-select');
-    if (!nameSelect) return;
-
-    nameSelect.tabIndex = 1;
-    document.querySelectorAll('#tasks-container .task-row').forEach(row => {
-      const project = row.querySelector('.project-select');
-      const details = row.querySelector('.task-input');
-      const rowButtons = row.querySelectorAll('button');
-      if (project) project.tabIndex = 1;
-      if (details) details.tabIndex = 1;
-      rowButtons.forEach(button => { button.tabIndex = -1; });
-    });
-
-    document.querySelectorAll('#individual-status-actions button, #tab-entry .label-row button').forEach(button => {
-      button.tabIndex = -1;
+    // Remove all forced tabindex attributes to restore clean, natural top-to-bottom, left-to-right DOM tab sequence
+    document.querySelectorAll('[tabindex]').forEach(el => {
+      el.removeAttribute('tabindex');
     });
   }
 

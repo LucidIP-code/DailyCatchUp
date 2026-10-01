@@ -446,9 +446,13 @@
         if (tabName === 'entry') {
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
             document.getElementById('tab-entry').classList.add('active');
+            const nameSelect = document.getElementById('name-select');
+            if (nameSelect) setTimeout(() => nameSelect.focus(), 60);
         } else {
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
             document.getElementById('tab-status').classList.add('active');
+            const copyBtn = document.getElementById('copy-btn');
+            if (copyBtn) setTimeout(() => copyBtn.focus(), 60);
             loadDailyStatus();
         }
     }
