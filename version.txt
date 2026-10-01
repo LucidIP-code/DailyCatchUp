@@ -1,3 +1,29 @@
+Commit: 39b0c3a5f9d801443816346900b70e9988deb7d1
+Author: Manoj S <mailfortempusage@gmail.com>
+Date:   Thu Oct 1 12:17:33 2026 +0530
+Subject: fix: restore natural top-to-bottom keyboard tab navigation order
+- Remove forced tabindex=1 and tabindex=-1 attribute overrides in previous-status-ui.js.
+- Set auto-focus on name-select when navigating onto task entry tab.
+
+--------------------------------------------------------------------------------
+Commit: 73045a52d026e0e3dcf1b3599e44d18f53491341
+Author: Manoj S <mailfortempusage@gmail.com>
+Date:   Thu Oct 1 11:58:21 2026 +0530
+Subject: fix: automatic month sheet creation, timezone & serverless routing fixes, UI/UX enhancements
+- Ensure automatic creation of new month sheet tabs (MMM-YY) with working day dates across daily status, task submission, and previous status endpoints.
+- Sync newly submitted person names into Redis options storage.
+- Add dedicated serverless API handlers for submit-task, delete-task, and sheet-url with updated vercel.json routes.
+- Normalize application timezone to Asia/Kolkata and enforce case-insensitive date cell matching.
+- Optimize Google Sheets metadata pre-fetching and 60-day max search depth in previous-status lookup.
+- Upgrade design with bright crimson action buttons, clean brand header styling, bold & larger names in status reports, and realistic ambient rocket flight & burst animations.
+
+--------------------------------------------------------------------------------
+Commit: d0732f5eb25271f5cd21cb78cc3fca1815fe76d7
+Author: Manoj S <mailfortempusage@gmail.com>
+Date:   Tue Sep 29 16:30:17 2026 +0530
+Subject: docs: update version.txt with latest commit entry
+
+--------------------------------------------------------------------------------
 Commit: a4c9e437f69fd91e55a6a400e403e37993f65112
 Author: Manoj S <mailfortempusage@gmail.com>
 Date:   Tue Sep 29 16:27:25 2026 +0530
