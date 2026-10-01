@@ -1,51 +1,15 @@
-const path = require("path");
-const { google } = require("googleapis");
 const { getOptions } = require("../storage");
-
-const authOptions = { scopes: ["https://www.googleapis.com/auth/spreadsheets"] };
-if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-  authOptions.credentials = {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  };
-} else {
-  authOptions.keyFile = path.join(process.cwd(), "service_account.json");
-}
-
-const auth = new google.auth.GoogleAuth(authOptions);
-const sheets = google.sheets({ version: "v4", auth });
+const {
+  sheets,
+  getCurrentSheetName,
+  ensureSheetExists,
+  getColumnLetter,
+  getValidTodayKeys,
+  getZonedDate,
+} = require("../sheet-helper");
 
 function sheetNameFor(date) {
-  const month = date.toLocaleDateString("en-US", { month: "short" });
-  return `${month}-${String(date.getFullYear()).slice(-2)}`;
-}
-
-function dateKeysFor(date) {
-  const day = date.getDate();
-  const paddedDay = String(day).padStart(2, "0");
-  const month = date.getMonth() + 1;
-  const paddedMonth = String(month).padStart(2, "0");
-  const year = date.getFullYear();
-  const shortYear = String(year).slice(-2);
-  const monthText = date.toLocaleDateString("en-US", { month: "short" }).toLowerCase();
-  return new Set([
-    `${day}-${monthText}-${shortYear}`,
-    `${paddedDay}-${monthText}-${shortYear}`,
-    `${day}/${month}/${year}`,
-    `${paddedDay}/${month}/${year}`,
-    `${paddedDay}/${paddedMonth}/${year}`,
-    `${month}/${paddedDay}/${year}`,
-    `${paddedMonth}/${paddedDay}/${year}`
-  ]);
-}
-
-function columnLetter(index) {
-  let result = "";
-  while (index >= 0) {
-    result = String.fromCharCode((index % 26) + 65) + result;
-    index = Math.floor(index / 26) - 1;
-  }
-  return result;
+  return getCurrentSheetName(date);
 }
 
 function parseStatus(status, knownProjects) {
@@ -53,16 +17,21 @@ function parseStatus(status, knownProjects) {
   if (!text || /^catchup not filled$/i.test(text) || /^on leave$/i.test(text)) return [];
 
   const projects = (knownProjects || [])
-    .map(p => String(p).trim())
+    .map((p) => String(p).trim())
     .filter(Boolean)
     .sort((a, b) => b.length - a.length);
 
-  const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const result = [];
   let current = null;
 
   for (const line of lines) {
-    if (/^first half leave$/i.test(line) || /^on permission$/i.test(line) || /^on leave$/i.test(line) || /^catchup not filled$/i.test(line)) {
+    if (
+      /^first half leave$/i.test(line) ||
+      /^on permission$/i.test(line) ||
+      /^on leave$/i.test(line) ||
+      /^catchup not filled$/i.test(line)
+    ) {
       continue;
     }
     let project = null;
@@ -88,7 +57,7 @@ function parseStatus(status, knownProjects) {
     if (project) {
       current = {
         project,
-        details: detail.replace(/^[•●▪◦*-]\s*/, "").trim()
+        details: detail.replace(/^[•●▪◦*-]\s*/, "").trim(),
       };
       result.push(current);
     } else if (current) {
@@ -97,47 +66,39 @@ function parseStatus(status, knownProjects) {
     }
   }
 
-  return result.filter(item => item.project && item.details);
+  return result.filter((item) => item.project && item.details);
 }
 
 async function readSheet(spreadsheetId, sheetName) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${sheetName}!A1:ZZ1000`
+    range: `${sheetName}!A1:ZZ1000`,
   });
   return response.data.values || [];
-}
-
-async function ensureSheet(spreadsheetId, sheetName) {
-  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
-  if (spreadsheet.data.sheets.some(s => s.properties.title === sheetName)) return;
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: { requests: [{ addSheet: { properties: { title: sheetName } } }] }
-  });
 }
 
 async function findOrCreatePersonColumn(spreadsheetId, sheetName, name) {
   let rows = await readSheet(spreadsheetId, sheetName);
   if (!rows.length) rows = [["Date"]];
   const headers = rows[0] || ["Date"];
-  let index = headers.findIndex(h => String(h || "").trim() === name);
+  let index = headers.findIndex(
+    (h) => String(h || "").trim().toLowerCase() === name.toLowerCase()
+  );
 
   if (index >= 0) return { rows, index };
 
   index = headers.length;
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${sheetName}!${columnLetter(index)}1`,
+    range: `${sheetName}!${getColumnLetter(index)}1`,
     valueInputOption: "USER_ENTERED",
-    requestBody: { values: [[name]] }
+    requestBody: { values: [[name]] },
   });
   return { rows, index };
 }
 
 function findDateRow(rows, date) {
-  const wanted = dateKeysFor(date);
+  const wanted = new Set(getValidTodayKeys(date));
   for (let i = 1; i < rows.length; i++) {
     const value = String(rows[i][0] || "").trim().toLowerCase();
     if (wanted.has(value)) return i;
@@ -147,17 +108,33 @@ function findDateRow(rows, date) {
 
 async function findLastFilledStatus(spreadsheetId, name, knownProjects) {
   const cache = new Map();
+
+  // Fetch spreadsheet metadata once to obtain all existing sheet titles
+  let existingSheets = new Set();
+  try {
+    const metadata = await sheets.spreadsheets.get({ spreadsheetId });
+    existingSheets = new Set(
+      (metadata.data.sheets || []).map((s) => s.properties.title)
+    );
+  } catch (err) {
+    console.error("Error fetching spreadsheet metadata:", err);
+  }
+
   const date = new Date();
   date.setHours(12, 0, 0, 0);
   date.setDate(date.getDate() - 1);
 
-  // Search backward by actual calendar date. Skip weekends, holidays, and
-  // empty workdays naturally by continuing until a genuinely filled task
-  // status is found. Month boundaries are handled automatically.
-  for (let daysBack = 1; daysBack <= 366; daysBack++) {
+  // Search backward up to 60 days
+  for (let daysBack = 1; daysBack <= 60; daysBack++) {
     const sheetName = sheetNameFor(date);
-    let rows;
 
+    // Skip sheets that do not exist in the Google Spreadsheet
+    if (existingSheets.size > 0 && !existingSheets.has(sheetName)) {
+      date.setDate(date.getDate() - 1);
+      continue;
+    }
+
+    let rows;
     if (cache.has(sheetName)) {
       rows = cache.get(sheetName);
     } else {
@@ -171,7 +148,9 @@ async function findLastFilledStatus(spreadsheetId, name, knownProjects) {
 
     if (rows.length) {
       const headers = rows[0] || [];
-      const nameIndex = headers.findIndex(h => String(h || "").trim() === name);
+      const nameIndex = headers.findIndex(
+        (h) => String(h || "").trim().toLowerCase() === name.toLowerCase()
+      );
 
       if (nameIndex >= 0) {
         const rowIndex = findDateRow(rows, date);
@@ -180,9 +159,11 @@ async function findLastFilledStatus(spreadsheetId, name, knownProjects) {
           const tasks = parseStatus(status, knownProjects);
 
           if (tasks.length) {
+            const zoned = getZonedDate(date);
+            const dateStr = `${zoned.fullYear}-${zoned.monthNum}-${zoned.dayPadded}`;
             return {
-              date: date.toISOString().slice(0, 10),
-              tasks
+              date: dateStr,
+              tasks,
             };
           }
         }
@@ -207,7 +188,9 @@ async function getTodayStatus(spreadsheetId, name) {
 
   if (!rows.length) return "";
   const headers = rows[0] || [];
-  const nameIndex = headers.findIndex(h => String(h || "").trim() === name);
+  const nameIndex = headers.findIndex(
+    (h) => String(h || "").trim().toLowerCase() === name.toLowerCase()
+  );
   if (nameIndex < 0) return "";
 
   const rowIndex = findDateRow(rows, today);
@@ -217,11 +200,14 @@ async function getTodayStatus(spreadsheetId, name) {
 
 module.exports = async (req, res) => {
   try {
-    const name = String(req.method === "GET" ? req.query.name || "" : req.body?.name || "").trim();
+    const name = String(
+      req.method === "GET" ? req.query.name || "" : req.body?.name || ""
+    ).trim();
     if (!name) return res.status(400).json({ error: "Name is required." });
 
     const spreadsheetId = process.env.SPREADSHEET_ID;
-    if (!spreadsheetId) return res.status(500).json({ error: "SPREADSHEET_ID is not configured." });
+    if (!spreadsheetId)
+      return res.status(500).json({ error: "SPREADSHEET_ID is not configured." });
 
     if (req.method === "GET") {
       if (String(req.query.mode || "").toLowerCase() === "today") {
@@ -241,7 +227,7 @@ module.exports = async (req, res) => {
       return res.json({
         name,
         date: result.date,
-        tasks: result.tasks
+        tasks: result.tasks,
       });
     }
 
@@ -251,7 +237,7 @@ module.exports = async (req, res) => {
         leave: "On Leave",
         "first-half": "First Half Leave",
         permission: "On Permission",
-        unmark: ""
+        unmark: "",
       };
 
       if (!Object.prototype.hasOwnProperty.call(statusByAction, action)) {
@@ -260,7 +246,7 @@ module.exports = async (req, res) => {
 
       const today = new Date();
       const sheetName = sheetNameFor(today);
-      await ensureSheet(spreadsheetId, sheetName);
+      await ensureSheetExists(spreadsheetId, sheetName);
 
       const { rows, index } = await findOrCreatePersonColumn(spreadsheetId, sheetName, name);
       const rowIndex = findDateRow(rows, today);
@@ -268,21 +254,25 @@ module.exports = async (req, res) => {
         return res.status(400).json({ error: "Today's date was not found in the sheet." });
       }
 
-      const range = `${sheetName}!${columnLetter(index)}${rowIndex + 1}`;
+      const range = `${sheetName}!${getColumnLetter(index)}${rowIndex + 1}`;
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range,
         valueInputOption: "USER_ENTERED",
-        requestBody: { values: [[statusByAction[action]]] }
+        requestBody: { values: [[statusByAction[action]]] },
       });
 
       const messages = {
         leave: `Marked ${name} as On Leave.`,
         "first-half": `Marked ${name} as First Half Leave.`,
         permission: `Marked ${name} as On Permission.`,
-        unmark: `Status removed for ${name}.`
+        unmark: `Status removed for ${name}.`,
       };
-      return res.json({ success: true, status: statusByAction[action], message: messages[action] });
+      return res.json({
+        success: true,
+        status: statusByAction[action],
+        message: messages[action],
+      });
     }
 
     res.setHeader("Allow", ["GET", "POST"]);

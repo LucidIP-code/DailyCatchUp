@@ -831,9 +831,9 @@
             const first = active[0];
             const second = active[1];
 
-            const impactX = window.innerWidth * (0.10 + Math.random() * 0.80);
-            const impactY = window.innerHeight * (0.10 + Math.random() * 0.80);
-            const collisionDuration = 14000 + Math.random() * 7000;
+            const impactX = window.innerWidth * (0.15 + Math.random() * 0.70);
+            const impactY = window.innerHeight * (0.15 + Math.random() * 0.70);
+            const collisionDuration = 32000 + Math.random() * 12000; // Casual, majestic flight speed (32s-44s)
 
             // One random approach direction, with the second rocket coming
             // from exactly the opposite side.
@@ -867,14 +867,12 @@
         mini.style.height = rocketSize + 'px';
         mini.style.transformOrigin = '50% 50%';
 
-        // The rocket graphic points upward by default. Rotate it so its nose
-        // points in the exact direction of travel.
+        // Rotate rocket nose in direction of travel
         const angle = Math.atan2(travelY, travelX) * 180 / Math.PI;
         mini.style.transform = 'rotate(' + (angle + 90) + 'deg)';
 
-        // Position the rocket CENTERS on opposite sides of the impact point.
-        // Their noses therefore meet at impactX/impactY without body overlap.
-        const startDistance = Math.max(window.innerWidth, window.innerHeight) + 800;
+        // Casual approach distance starting from screen edge boundaries
+        const startDistance = Math.max(window.innerWidth, window.innerHeight) * 0.7 + 300;
 
         const startCenterX = impactX - travelX * startDistance;
         const startCenterY = impactY - travelY * startDistance;
@@ -899,9 +897,6 @@
 
         state.animation = anim;
 
-        // Keep them at the contact position until triggerRocketCollision()
-        // runs. This prevents the normal flight lifecycle from respawning
-        // them before the crash effect has played.
         anim.onfinish = () => {
             if (!state.busy) state.animation = anim;
         };
@@ -913,40 +908,39 @@
         crash.style.left = x + 'px';
         crash.style.top = y + 'px';
 
-        // Layered impact: white-hot flash, expanding fireball, flame tongues,
-        // smoke, and many heavy fragments with individual ballistic paths.
         ['rocket-crash-flash','rocket-crash-fireball','rocket-crash-smoke','rocket-crash-ring'].forEach(cls => {
             const el = document.createElement('div');
             el.className = cls;
             crash.appendChild(el);
         });
 
-        for (let i = 0; i < 34; i++) {
+        // Realistic expanding debris particles
+        for (let i = 0; i < 26; i++) {
             const d = document.createElement('span');
             d.className = i % 2 ? 'rocket-crash-debris' : 'rocket-crash-debris rocket-crash-metal';
             const angle = Math.random() * Math.PI * 2;
-            const distance = 80 + Math.random() * 280;
+            const distance = 50 + Math.random() * 180;
             d.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
             d.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
-            d.style.setProperty('--delay', Math.random() * .18 + 's');
-            d.style.setProperty('--size', 4 + Math.random() * 9 + 'px');
-            d.style.setProperty('--rotation', (Math.random() * 1440 - 720) + 'deg');
+            d.style.setProperty('--delay', Math.random() * .14 + 's');
+            d.style.setProperty('--size', 3 + Math.random() * 7 + 'px');
+            d.style.setProperty('--rotation', (Math.random() * 720 - 360) + 'deg');
             crash.appendChild(d);
         }
 
-        for (let i = 0; i < 28; i++) {
+        for (let i = 0; i < 20; i++) {
             const s = document.createElement('span');
             s.className = 'rocket-crash-spark';
             const angle = Math.random() * Math.PI * 2;
-            const distance = 90 + Math.random() * 230;
+            const distance = 60 + Math.random() * 160;
             s.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
             s.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
-            s.style.setProperty('--delay', Math.random() * .12 + 's');
+            s.style.setProperty('--delay', Math.random() * .1 + 's');
             crash.appendChild(s);
         }
 
         document.body.appendChild(crash);
-        setTimeout(() => crash.remove(), 3300);
+        setTimeout(() => crash.remove(), 3500);
     }
 
     window.addEventListener('DOMContentLoaded', () => {

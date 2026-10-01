@@ -9,6 +9,9 @@
     { "src": "api/holidays.js", "use": "@vercel/node" },
     { "src": "api/today-holiday-feed.js", "use": "@vercel/node" },
     { "src": "api/previous-status.js", "use": "@vercel/node" },
+    { "src": "api/submit-task.js", "use": "@vercel/node" },
+    { "src": "api/delete-task.js", "use": "@vercel/node" },
+    { "src": "api/sheet-url.js", "use": "@vercel/node" },
     { "src": "api/app.js", "use": "@vercel/node" }
   ],
   "routes": [
@@ -21,6 +24,9 @@
     { "src": "/api/holidays", "dest": "api/holidays.js" },
     { "src": "/api/today-holiday-feed", "dest": "api/today-holiday-feed.js" },
     { "src": "/api/previous-status", "dest": "api/previous-status.js" },
+    { "src": "/api/submit-task", "dest": "api/submit-task.js" },
+    { "src": "/api/delete-task", "dest": "api/delete-task.js" },
+    { "src": "/api/sheet-url", "dest": "api/sheet-url.js" },
     { "src": "/(.*)", "dest": "server.js" }
   ]
 }

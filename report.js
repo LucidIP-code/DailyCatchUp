@@ -1,31 +1,19 @@
+const { getZonedDate, getValidTodayKeys } = require("./sheet-helper");
+
 function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
  * @param {Array<Object>} rows
- * @param {Array<string>} [knownProjects] - project names from data.json (dropdown options),
+ * @param {Array<string>} [knownProjects] - project names from options/redis,
  *        used to correctly identify headings even when the project name itself
  *        contains a dash or colon (e.g. "PrintInspection - KBPS").
  */
 function generateReport(rows, knownProjects = []) {
-    const today = new Date();
-    const day = today.getDate();
-    const dayPadded = String(day).padStart(2, '0');
-    const monthStr = today.toLocaleDateString("en-US", { month: "short" });
-    const monthNum = String(today.getMonth() + 1).padStart(2, '0');
-    const shortYear = today.getFullYear().toString().slice(-2);
-    const fullYear = today.getFullYear();
-
-    const displayDate = `${day}-${monthStr}-${fullYear}`;
-
-    const validTodayKeys = [
-        `${day}-${monthStr}-${shortYear}`,
-        `${dayPadded}-${monthStr}-${shortYear}`,
-        `${day}/${monthNum}/${fullYear}`,
-        `${dayPadded}/${monthNum}/${fullYear}`,
-        `${monthNum}/${dayPadded}/${fullYear}`
-    ];
+    const zoned = getZonedDate();
+    const displayDate = `${zoned.day}-${zoned.monthStr}-${zoned.fullYear}`;
+    const validTodayKeys = getValidTodayKeys();
 
     let todayRow = null;
 
@@ -33,7 +21,7 @@ function generateReport(rows, knownProjects = []) {
         const dateValue = Object.values(row)[0];
         if (!dateValue) continue;
 
-        const cleanVal = String(dateValue).trim();
+        const cleanVal = String(dateValue).trim().toLowerCase();
         if (validTodayKeys.includes(cleanVal)) {
             todayRow = row;
             break;
@@ -54,7 +42,7 @@ function generateReport(rows, knownProjects = []) {
         .sort((a, b) => b.length - a.length)
         .map(proj => ({
             name: proj,
-            regex: new RegExp(`^${escapeRegExp(proj)}\\s*(?:-|:)\\s*(.+)$`)
+            regex: new RegExp(`^${escapeRegExp(proj)}\\s*(?:-|:)\\s*(.+)$`, 'i')
         }));
 
     const fallbackHeadingRegex = /^([A-Za-z0-9][A-Za-z0-9 ()]{0,49}?)\s*(?:\s*-\s*|:\s*)(.+)$/;

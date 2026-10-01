@@ -1,41 +1,27 @@
-const { google } = require("googleapis");
 const generateReport = require("../report");
 const { getOptions } = require("../storage");
-
-const authOptions = {
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-};
-
-if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-  authOptions.credentials = {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  };
-} else {
-  authOptions.keyFile = require("path").join(process.cwd(), "service_account.json");
-}
-
-const auth = new google.auth.GoogleAuth(authOptions);
-const sheets = google.sheets({ version: "v4", auth });
-
-function getCurrentSheetName() {
-  const now = new Date();
-  const month = now.toLocaleDateString("en-US", { month: "short" });
-  const year = now.getFullYear().toString().slice(-2);
-  return `${month}-${year}`;
-}
+const {
+  sheets,
+  getCurrentSheetName,
+  ensureSheetExists,
+} = require("../sheet-helper");
 
 module.exports = async (req, res) => {
   if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
-    return res.status(405).json({ error: "Method not allowed" });
+    res.setHeader("Allow", ["GET"]);
+    return res.status(405).json({ error: "Method not allowed." });
   }
 
   try {
     const spreadsheetId = process.env.SPREADSHEET_ID;
-    const sheetName = getCurrentSheetName();
+    if (!spreadsheetId) {
+      return res.status(500).json({ error: "SPREADSHEET_ID environment variable is not configured." });
+    }
 
-    // This is the same Redis-backed source used by Manage Names/Projects.
+    const sheetName = getCurrentSheetName();
+    await ensureSheetExists(spreadsheetId, sheetName);
+
+    // Redis-backed active names & projects
     const persistentData = await getOptions();
     const activeNames = new Set(persistentData.names || []);
 
@@ -74,7 +60,7 @@ module.exports = async (req, res) => {
       generateReport(rows, persistentData.projects || [])
     );
   } catch (err) {
-    console.error("Error generating Redis-backed daily status:", err);
-    return res.status(500).json({ error: err.message });
+    console.error("Error generating daily status report:", err);
+    return res.status(500).json({ error: err.message || "Unable to generate daily status." });
   }
 };
