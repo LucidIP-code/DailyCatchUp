@@ -159,6 +159,94 @@
             setTimeout(() => toast.remove(), 300);
         }, 3500);
     }
+    window.showToast = showToast;
+
+    // --- TASK INPUT RESTRICTIONS (RESTRICT HYPHENS) ---
+    const HYPHEN_REGEX_TEST = /[-–—−‑‒―\u2010-\u2015\u2212\uFE63\uFF0D]/;
+
+    function isHyphenChar(str) {
+        return HYPHEN_REGEX_TEST.test(String(str || ''));
+    }
+
+    function stripHyphens(str) {
+        return String(str || '').replace(/[-–—−‑‒―\u2010-\u2015\u2212\uFE63\uFF0D]/g, '');
+    }
+    window.stripHyphens = stripHyphens;
+
+    let lastHyphenToastTime = 0;
+    function notifyHyphenRestricted(message = 'Hyphens (-) are not allowed in task details.') {
+        const now = Date.now();
+        if (now - lastHyphenToastTime > 1800) {
+            lastHyphenToastTime = now;
+            showToast(message, 'error');
+        }
+    }
+
+    // Intercept keyboard typing of hyphens/dashes
+    document.addEventListener('keydown', (e) => {
+        if (!e.target || !e.target.matches || !e.target.matches('.task-input')) return;
+        if (!e.ctrlKey && !e.metaKey) {
+            if (isHyphenChar(e.key)) {
+                e.preventDefault();
+                notifyHyphenRestricted('Hyphens (-) are not allowed in task details.');
+            }
+        }
+    });
+
+    // Intercept beforeinput (virtual keyboards, dictation, IME)
+    document.addEventListener('beforeinput', (e) => {
+        if (!e.target || !e.target.matches || !e.target.matches('.task-input')) return;
+        if (e.data && isHyphenChar(e.data)) {
+            e.preventDefault();
+            const target = e.target;
+            const cleaned = stripHyphens(e.data);
+            if (cleaned) {
+                const start = target.selectionStart;
+                const end = target.selectionEnd;
+                const val = target.value;
+                target.value = val.slice(0, start) + cleaned + val.slice(end);
+                target.selectionStart = target.selectionEnd = start + cleaned.length;
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            notifyHyphenRestricted('Hyphens (-) are not allowed in task details.');
+        }
+    });
+
+    // Strip hyphens on paste
+    document.addEventListener('paste', (e) => {
+        const target = e.target;
+        if (!target || !target.matches || !target.matches('.task-input')) return;
+        const clipboard = e.clipboardData || window.clipboardData;
+        const pasted = clipboard ? clipboard.getData('text') : '';
+        if (pasted && isHyphenChar(pasted)) {
+            e.preventDefault();
+            const cleaned = stripHyphens(pasted);
+            const start = target.selectionStart;
+            const end = target.selectionEnd;
+            const val = target.value;
+            target.value = val.slice(0, start) + cleaned + val.slice(end);
+            target.selectionStart = target.selectionEnd = start + cleaned.length;
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            notifyHyphenRestricted('Hyphens (-) were removed from pasted text.');
+        }
+    });
+
+    // Fallback on input event (drag & drop, autocompletion)
+    document.addEventListener('input', (e) => {
+        const target = e.target;
+        if (!target || !target.matches || !target.matches('.task-input')) return;
+        if (isHyphenChar(target.value)) {
+            const start = target.selectionStart;
+            const end = target.selectionEnd;
+            const oldVal = target.value;
+            const removedBeforeStart = (oldVal.slice(0, start).match(/[-–—−‑‒―\u2010-\u2015\u2212\uFE63\uFF0D]/g) || []).length;
+            const removedBeforeEnd = (oldVal.slice(0, end).match(/[-–—−‑‒―\u2010-\u2015\u2212\uFE63\uFF0D]/g) || []).length;
+            target.value = stripHyphens(oldVal);
+            target.selectionStart = Math.max(0, start - removedBeforeStart);
+            target.selectionEnd = Math.max(0, end - removedBeforeEnd);
+            notifyHyphenRestricted('Hyphens (-) are not allowed in task details.');
+        }
+    });
 
     async function init() {
         await loadOptions();
@@ -233,7 +321,10 @@
                 <select class="project-select" onchange="handleDropdownChange(this, 'project')">${projectOptions}</select>
             </div>
             <div class="form-group">
-                <label>Task Details (Enter each point on a new line):</label>
+                <div class="label-row" style="margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
+                    <label>Task Details (Enter each point on a new line):</label>
+                    <span style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">(No Hyphens Allowed)</span>
+                </div>
                 <textarea class="task-input" rows="3" placeholder="Point 1: Details...\nPoint 2: Details..."></textarea>
             </div>
         `;
@@ -465,15 +556,26 @@
         const tasks = [];
         let isValid = true;
 
+        let hyphenDetected = false;
         taskRows.forEach(row => {
-            const proj = row.querySelector('.project-select').value;
-            const taskText = row.querySelector('.task-input').value;
+            const proj = row.querySelector('.project-select')?.value;
+            const taskInput = row.querySelector('.task-input');
+            let taskText = taskInput ? taskInput.value : '';
+            if (isHyphenChar(taskText)) {
+                hyphenDetected = true;
+                taskText = stripHyphens(taskText);
+                if (taskInput) taskInput.value = taskText;
+            }
             if (!proj || proj === '__ADD_NEW__' || !taskText.trim()) {
                 isValid = false;
             } else {
                 tasks.push({ project: proj, task: taskText.trim() });
             }
         });
+
+        if (hyphenDetected) {
+            showToast('Hyphens (-) were removed from task details.', 'error');
+        }
 
         if (!isValid || tasks.length === 0) return showToast("Please complete all project and task fields.", "error");
 
@@ -496,9 +598,11 @@
         const tasks = [];
 
         taskRows.forEach(row => {
+            const taskInput = row.querySelector('.task-input');
+            const cleanTask = stripHyphens(taskInput ? taskInput.value : '').trim();
             tasks.push({
-                project: row.querySelector('.project-select').value,
-                task: row.querySelector('.task-input').value.trim()
+                project: row.querySelector('.project-select')?.value,
+                task: cleanTask
             });
         });
 

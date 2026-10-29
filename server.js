@@ -29,10 +29,21 @@ app.use((req, res, next) => {
 
 // Start local HTTP server if executed directly
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log("Server active on port " + PORT);
-  });
+  let PORT = parseInt(process.env.PORT, 10) || 3000;
+  const startServer = (port) => {
+    const server = app.listen(port, () => {
+      console.log("Server active on port " + port);
+    });
+    server.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.warn(`Port ${port} is in use, trying port ${port + 1}...`);
+        startServer(port + 1);
+      } else {
+        console.error("Server error:", err);
+      }
+    });
+  };
+  startServer(PORT);
 }
 
 module.exports = app;

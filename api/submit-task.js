@@ -89,18 +89,19 @@ module.exports = async (req, res) => {
       });
     }
 
+    const HYPHEN_REGEX = /[-–—−‑‒―\u2010-\u2015\u2212\uFE63\uFF0D]/g;
     const formattedCellText = tasks
       .map((t) => {
         const lines = String(t.task || "")
           .split("\n")
-          .map((l) => l.trim())
+          .map((l) => l.replace(HYPHEN_REGEX, "").trim())
           .filter(Boolean);
         if (lines.length === 0) return "";
         const project = String(t.project || "").trim();
-        const firstLine = `${project} - ${lines[0].replace(/^[•\-\*\d+\.]\s*/, "")}`;
+        const firstLine = `${project} - ${lines[0].replace(/^[•*\d+\.]\s*/, "")}`;
         const restLines = lines
           .slice(1)
-          .map((line) => `   ${line.replace(/^[•\-\*\d+\.]\s*/, "")}`);
+          .map((line) => `   ${line.replace(/^[•*\d+\.]\s*/, "")}`);
         return [firstLine, ...restLines].join("\n");
       })
       .filter(Boolean)

@@ -1,3 +1,12 @@
+Commit: 8b494a1d03e0bb214a379ea10c223e1683251f47
+Author: Manoj S <mailfortempusage@gmail.com>
+Date:   Thu Oct 29 12:30:00 2026 +0530
+Subject: fix: restrict hyphens in task details input to prevent downstream report parsing errors
+- Restrict typing, pasting, and entering hyphens/dashes in the task details textarea.
+- Add visual indicator "(No Hyphens Allowed)" beside the Task Details field label.
+- Sanitize hyphens upon loading previous status, confirmation preview, submission, and backend storage.
+
+--------------------------------------------------------------------------------
 Commit: 39b0c3a5f9d801443816346900b70e9988deb7d1
 Author: Manoj S <mailfortempusage@gmail.com>
 Date:   Thu Oct 1 12:17:33 2026 +0530

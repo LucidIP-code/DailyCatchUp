@@ -215,7 +215,12 @@
       const project = row.querySelector('.project-select');
       const details = row.querySelector('.task-input');
       if (project) setProjectValue(project, task.project);
-      if (details) details.value = escapeText(task.details);
+      if (details) {
+        const text = escapeText(task.details);
+        details.value = typeof window.stripHyphens === 'function'
+          ? window.stripHyphens(text)
+          : text.replace(/[-–—−‑‒―\u2010-\u2015\u2212\uFE63\uFF0D]/g, '');
+      }
     });
 
     if (typeof window.updateRemoveButtonsVisibility === 'function') {
